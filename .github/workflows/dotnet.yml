@@ -15,6 +15,8 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 5.0.x
+    - name: Install libfontconfig1
+      run: sudo apt-get install -y libfontconfig1
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
