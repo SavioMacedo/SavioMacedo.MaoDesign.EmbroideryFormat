@@ -33,7 +33,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Dst
             return file;
         }
 
-        public void ProcessHeaderInfo(string prefix, string value)
+        private void ProcessHeaderInfo(string prefix, string value)
         {
             switch (prefix)
             {
@@ -66,7 +66,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Dst
             }
         }
 
-        public void ReadHeader(BinaryReader reader)
+        private void ReadHeader(BinaryReader reader)
         {
             byte[] header = reader.ReadBytes(512);
             string headerString = Encoding.UTF8.GetString(header);
@@ -86,7 +86,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Dst
             }
         }
 
-        public void ReadStitches(BinaryReader reader)
+        private void ReadStitches(BinaryReader reader)
         {
             bool sequinMode = false;
             while (true)
