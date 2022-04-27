@@ -1,5 +1,7 @@
 # SavioMacedo.MaoDesign.EmbroideryFormat
 [![.NET](https://github.com/SavioMacedo/SavioMacedo.MaoDesign.EmbroideryFormat/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/SavioMacedo/SavioMacedo.MaoDesign.EmbroideryFormat/actions/workflows/dotnet.yml)
+![Nuget](https://img.shields.io/nuget/dt/SavioMacedo.MaoDesign.EmbroideryFormat?label=NuGet%20Downloads)
+[![GitHub license](https://img.shields.io/github/license/SavioMacedo/SavioMacedo.MaoDesign.EmbroideryFormat)](https://github.com/SavioMacedo/SavioMacedo.MaoDesign.EmbroideryFormat/blob/main/LICENSE)
 
 Reader and writer for embroidery files in .net
 This package can read:
