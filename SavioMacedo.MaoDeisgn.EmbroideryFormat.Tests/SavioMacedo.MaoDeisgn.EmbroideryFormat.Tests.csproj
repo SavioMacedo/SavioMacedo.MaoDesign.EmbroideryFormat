@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 
@@ -40,6 +40,9 @@
 		</None>
 		<None Update="Fixtures\Files\smf_13.jef">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Fixtures\Files\Testepec.bin">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Fixtures\Files\zeikalesflow.xxx">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
