@@ -4,6 +4,7 @@ using System.Linq;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Extensions;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic.Enums;
+using SavioMacedo.MaoDesign.EmbroideryFormat.Exceptions;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 {
@@ -29,7 +30,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 
             if (!pecString.Equals("#PEC0001"))
             {
-                return null;
+                throw new UnknowFormatException($"PEC File with header not reconized: {pecString}, expected: #PEC0001");
             }
 
             file.ReadPec(reader);
