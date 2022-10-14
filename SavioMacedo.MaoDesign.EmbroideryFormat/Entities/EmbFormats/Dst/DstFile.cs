@@ -80,7 +80,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Dst
 
             if (Threads.Count == 0)
             {
-                Random rng = new Random();
+                Random rng = new();
                 List<DstThread> threadList = DstThread.GetThreadSet().OrderBy(a => rng.Next()).ToList();
                 Threads.AddRange(threadList);
             }

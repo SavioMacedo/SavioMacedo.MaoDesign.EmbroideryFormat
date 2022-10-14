@@ -20,7 +20,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                 Data = bytes,
                 FileName = fileName
             };
-            BinaryReader reader = new BinaryReader(new MemoryStream(file.Data));
+            BinaryReader reader = new(new MemoryStream(file.Data));
             JefThread[] jefThreads = JefThread.GetThreadSet();
             int stitchOffset = reader.ReadInt32();
             reader.BaseStream.Seek(20, SeekOrigin.Current);
