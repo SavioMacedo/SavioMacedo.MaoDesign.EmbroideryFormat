@@ -81,5 +81,41 @@ namespace SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.Fixtures
             Stream fileStream = GetXxxStream();
             return fileStream.ReadFully();
         }
+
+        public Stream GetBinPesStream()
+        {
+            return GetStream("Fixtures/Files/pes.bin");
+        }
+
+        public byte[] GetBinPesBytes()
+        {
+            Stream fileStream = GetBinPesStream();
+            return fileStream.ReadFully();
+        }
+
+        public Stream GetBinHusStream()
+        {
+            return GetStream("Fixtures/Files/hus.bin");
+        }
+
+        public Stream GetBinDstStream()
+        {
+            return GetStream("Fixtures/Files/dst.bin");
+        }
+
+        public Stream GetBinJefStream()
+        {
+            return GetStream("Fixtures/Files/jef.bin");
+        }
+
+        public Stream GetBinPecStream()
+        {
+            return GetStream("Fixtures/Files/pec.bin");
+        }
+
+        public Stream GetBinXxxStream()
+        {
+            return GetStream("Fixtures/Files/xxx.bin");
+        }
     }
 }

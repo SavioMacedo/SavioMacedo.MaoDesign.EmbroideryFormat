@@ -11,7 +11,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
                 return string.Empty;
 
             char[] chars = reader.ReadChars((int)lenght);
-            string str = new string(chars);
+            string str = new(chars);
             return str;
         }
 

@@ -26,6 +26,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Fixtures\Files\pec.bin">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Fixtures\Files\hus.bin">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Fixtures\Files\elephafr5a.hus">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
@@ -35,13 +41,22 @@
 		<None Update="Fixtures\Files\Hopea.pec">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Fixtures\Files\pes.bin">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Fixtures\Files\dst.bin">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Fixtures\Files\sdas.DST">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Fixtures\Files\jef.bin">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Fixtures\Files\smf_13.jef">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="Fixtures\Files\Testepec.bin">
+		<None Update="Fixtures\Files\xxx.bin">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Fixtures\Files\zeikalesflow.xxx">
