@@ -173,6 +173,8 @@ namespace SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.ReadFiles
 
             //Act
             PesFile resultFile = PesFile.Read(fileBytes, false, false, 2.0f);
+            resultFile.BinaryWrite();
+            resultFile = PesFile.Read(resultFile)
 
             //Assert
             Assert.Equal(93513, resultFile.Data.Length);

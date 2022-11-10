@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
@@ -64,6 +65,12 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
                 return (bytes[3] & 0xFF) + ((bytes[2] & 0xFF) << 8) + ((bytes[1] & 0xFF) << 16) + ((bytes[0] & 0xFF) << 24);
             }
             return null;
+        }
+
+        public static void WriteInt8(this BinaryWriter writer, ulong value)
+        {
+            writer.Write(value);
+            writer.Flush();
         }
     }
 }

@@ -72,7 +72,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             }
         }
 
-        public int FindNearestColorIndex(List<EmbThread> embThreads)
+        public int FindNearestColorIndex(IEnumerable<EmbThread> embThreads)
         {
             long red = Red;
             long green = Green;

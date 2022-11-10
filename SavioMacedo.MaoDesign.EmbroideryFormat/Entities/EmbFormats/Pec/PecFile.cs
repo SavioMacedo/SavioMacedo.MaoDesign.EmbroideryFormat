@@ -5,6 +5,8 @@ using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Extensions;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic.Enums;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Exceptions;
+using System;
+using SkiaSharp;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 {
@@ -63,6 +65,64 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             reader.BaseStream.Seek(stitchBlockEnd, SeekOrigin.Current);
             int byteSize = pecGraphicByteStride * pecGraphicIconHeight;
             ReadPecGraphics(reader, byteSize, pecGraphicByteStride, countColors + 1, threads);
+        }
+
+        internal void WritePec(BinaryWriter binaryWriter)
+        {
+            var extends = GetBound();
+            if(Threads.Count == 0)
+            {
+                FixColorCount();
+                Threads = Threads;
+            }
+
+
+        }
+
+        internal Tuple<List<int>, List<SKColor>> WritePecHeader(BinaryWriter binaryWriter)
+        {
+            string name = FileName.PadLeft(16);
+            binaryWriter.Write(name);
+            binaryWriter.Flush();
+            binaryWriter.Write("\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\xFF\x00");
+            binaryWriter.Flush();
+            binaryWriter.WriteInt8(48 / 8);
+            binaryWriter.WriteInt8(38);
+
+            var threadList = PecThread.GetThreadSet();
+            List<int> colorIndexList = BuildUniquePalette(threadList, Threads);
+
+            IEnumerable<SKColor> rgbList = threadList.Select(a => a.Color);
+            int currentThreadCount = colorIndexList.Count;
+
+            if(currentThreadCount != 0)
+            {
+                binaryWriter.Write("\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20");
+                binaryWriter.Flush();
+                int addValue = currentThreadCount - 1;
+                colorIndexList.Insert(0, addValue);
+
+                if (colorIndexList[0] >= 255)
+                {
+                    throw new Exception($"too many color changes, ({colorIndexList.Count}) out of bounds (0, 255)");
+                }
+
+                binaryWriter.Write(colorIndexList.SelectMany(BitConverter.GetBytes).ToArray());
+                binaryWriter.Flush();
+            }
+            else
+            {
+                binaryWriter.Write("\x20\x20\x20\x20\x64\x20\x00\x20\x00\x20\x20\x20\xFF");
+                binaryWriter.Flush();
+            }
+
+            for(var i = currentThreadCount; currentThreadCount < 463; i++)
+            {
+                binaryWriter.Write("\x20");
+                binaryWriter.Flush();
+            }
+
+            return (colorIndexList, rgbList);
         }
 
         private void ReadPecGraphics(BinaryReader reader, int byteSize, int pecGraphicByteStride, int count, List<PecThread> threads)

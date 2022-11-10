@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic.Enums;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec;
@@ -18,7 +19,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
 
         public static new PesFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)
         {
-            PesFile file = new PesFile
+            PesFile file = new()
             {
                 Data = bytes
             };
@@ -40,30 +41,36 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
                 case "#PES0060":
                     {
                         file.ReadPesHeaderVersion6(reader, pecThread);
+                        file.SetMetadata("version", "6");
                         break;
                     }
                 case "#PES0050":
                     {
                         file.ReadPesHeaderVersion5(reader, pecThread);
+                        file.SetMetadata("version", "5");
                         break;
                     }
                 case "#PES0055":
                     {
                         file.ReadPesHeaderVersion5(reader, pecThread);
+                        file.SetMetadata("version", "5.5");
                         break;
                     }
                 case "#PES0056":
                     {
                         file.ReadPesHeaderVersion5(reader, pecThread);
+                        file.SetMetadata("version", "5.6");
                         break;
                     }
                 case "#PES0040":
                     {
                         file.ReadPesHeaderVersion4(reader);
+                        file.SetMetadata("version", "4");
                         break;
                     }
                 case "#PES0001":
                     {
+                        file.SetMetadata("version", "1");
                         break;
                     }
             }
@@ -106,6 +113,41 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
 
             Stitches = embroideryBasic.Stitches;
             Threads = embroideryBasic.Threads;
+        }
+
+        public override void BinaryWrite()
+        {
+            MemoryStream memoryStream = new();
+            BinaryWriter streamWriter = new(memoryStream, Encoding.UTF8);
+            string version = GetMetadata("version");
+            bool isTruncated = bool.Parse(GetMetadata("truncated"));
+
+            if(isTruncated)
+            {
+                if(version == "1")
+                {
+                    WriteVersion1(streamWriter);
+                }
+            }
+
+
+        }
+
+        private void WriteVersion1(BinaryWriter streamWriter)
+        {
+            var threadSet = PecThread.GetThreadSet();
+            
+            streamWriter.Write("#PES0001");
+            streamWriter.Flush();
+
+            var extends = Extents();
+            var cx = (extends.Item3 + extends.Item1) / 2;
+            var cy = (extends.Item4+ extends.Item2) / 2;
+
+            var left = extends.Item1 - cx;
+            var top = extends.Item2 - cy;
+            var right = extends.Item3 - cx;
+            var bottom = extends.Item4 - cy;
         }
 
         private void ReadPesThread(BinaryReader reader, List<PecThread> threads)

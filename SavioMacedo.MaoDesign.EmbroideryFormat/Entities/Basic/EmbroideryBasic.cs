@@ -28,6 +28,8 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public EmbroideryBasic() => (_previousX, _previousY, Stitches, Threads, Metadata) = (0, 0, new List<Stitch>(), new List<EmbThread>(), new Dictionary<string, string>());
 
+        public abstract void BinaryWrite();
+
         public void Move(float dX = 0, float dY = 0)
         {
             AddStitchRelative(Command.Jump, dX, dY);
@@ -392,6 +394,73 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             {
                 SkBitmap = tempImage;
             }
+        }
+
+        public void FixColorCount()
+        {
+            int threadIndex = 0;
+            bool isInitColor = true;
+
+            foreach(var stitch in Stitches)
+            {
+                var data = stitch.Command;
+                if(data == Command.Stitch || data == Command.ColorBreak)
+                {
+                    if(isInitColor)
+                    {
+                        threadIndex++;
+                        isInitColor = false;
+                    }
+                }
+                else if(data == Command.ColorChange || data == Command.ColorBreak)
+                {
+                    isInitColor = true;
+                }
+            }
+
+            while(Threads.Count < threadIndex)
+            {
+                AddThread(GetThreadOrFiller(Threads.Count));
+            }
+        }
+
+        public void InterpolateStopAsDuplicateColor(Command threadChangeCommand = Command.ColorChange)
+        {
+            int threadIndex = 0;
+            for(var i = 0; i < Stitches.Count; i++)
+            {
+                Stitch stitch = Stitches[i];
+                Command command = stitch.Command;
+                if (command == Command.Stitch)
+                    continue;
+                else if (command == Command.ColorBreak || command == Command.ColorChange)
+                    threadIndex++;
+                else if (command == Command.Stop)
+                {
+                    try
+                    {
+                        Threads.Insert(threadIndex, Threads.ElementAt(threadIndex));
+                        Stitches.ElementAt(i).Command = threadChangeCommand;
+                        threadIndex++;
+                    }
+                    catch(IndexOutOfRangeException)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        public List<int> BuildUniquePalette(IEnumerable<EmbThread> threadPalette, List<EmbThread> threadList)
+        {
+            List<int> palette = new();
+
+            foreach(var thread in threadList)
+            {
+                palette.Add(thread.FindNearestColorIndex(threadPalette));
+            }
+
+            return palette;
         }
 
         internal SKBitmap ToBitmap(float threadThickness, bool hideMachinePath, double filterUtglyStitchesThreshold, float scale, SKPointMode sKPointMode = SKPointMode.Polygon)
