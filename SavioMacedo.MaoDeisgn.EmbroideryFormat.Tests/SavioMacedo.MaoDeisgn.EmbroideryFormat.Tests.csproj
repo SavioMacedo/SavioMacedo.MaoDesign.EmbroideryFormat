@@ -26,6 +26,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Fixtures\Files\Frozen 2.pes">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Fixtures\Files\pec.bin">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
