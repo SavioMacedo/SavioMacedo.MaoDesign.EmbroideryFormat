@@ -24,6 +24,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public float ImageHeight { get; set; }
         public float ImageWidth { get; set; }
         public SKBitmap SkBitmap { get; set; }
+        public float WidthRealSizeInMM { get { return ImageWidth / 10; } }
+        public float HeightRealSizeInMM { get { return ImageHeight / 10; } }
+
         internal SKPoint translateStart;
 
         public EmbroideryBasic() => (_previousX, _previousY, Stitches, Threads, Metadata) = (0, 0, new List<Stitch>(), new List<EmbThread>(), new Dictionary<string, string>());
