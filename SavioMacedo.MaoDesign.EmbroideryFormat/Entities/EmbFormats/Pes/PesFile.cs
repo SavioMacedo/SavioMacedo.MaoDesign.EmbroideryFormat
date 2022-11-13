@@ -110,9 +110,12 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
 
         private void ReadPesThread(BinaryReader reader, List<PecThread> threads)
         {
-            PecThread thread = new PecThread();
+            PecThread thread = new();
             thread.CatalogNumber = reader.ReadPesString();
-            thread.Color = new SKColor((uint)(0xFF000000 | reader.ReadInt24Be()));
+            byte red = reader.ReadByte();
+            byte green = reader.ReadByte();
+            byte blue = reader.ReadByte();
+            thread.Color = new SKColor(red, green, blue);
             reader.BaseStream.Seek(5, SeekOrigin.Current);
             thread.Description = reader.ReadPesString();
             thread.Brand = reader.ReadPesString();
