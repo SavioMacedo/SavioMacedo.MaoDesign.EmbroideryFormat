@@ -148,6 +148,29 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
             var top = extends.Item2 - cy;
             var right = extends.Item3 - cx;
             var bottom = extends.Item4 - cy;
+
+            var placeholderPeckBlock = streamWriter.BaseStream.Position;
+            streamWriter.Write((uint)0);
+            streamWriter.Flush();
+
+            if(Stitches.Count == 0)
+            {
+                WritePesHeaderV1(streamWriter, 0);
+                streamWriter.Write((ushort)0x0000);
+                streamWriter.Flush();
+                streamWriter.Write((ushort)0x0000);
+                streamWriter.Flush();
+            }
+        }
+
+        private void WritePesHeaderV1(BinaryWriter streamWriter, ushort value)
+        {
+            streamWriter.Write((ushort)0x01);
+            streamWriter.Flush();
+            streamWriter.Write((ushort)0x01);
+            streamWriter.Flush();
+            streamWriter.Write(value);
+            streamWriter.Flush();
         }
 
         private void ReadPesThread(BinaryReader reader, List<PecThread> threads)
