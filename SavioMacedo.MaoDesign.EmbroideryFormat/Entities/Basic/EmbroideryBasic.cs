@@ -10,7 +10,7 @@ using SkiaSharp;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 {
-    public abstract class EmbroideryBasic
+    public class EmbroideryBasic
     {
         private float _previousX;
         private float _previousY;
@@ -28,7 +28,19 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public EmbroideryBasic() => (_previousX, _previousY, Stitches, Threads, Metadata) = (0, 0, new List<Stitch>(), new List<EmbThread>(), new Dictionary<string, string>());
 
-        public abstract void BinaryWrite();
+        public EmbroideryBasic (EmbroideryBasic p)
+        {
+            FileName = p.FileName;
+            Metadata = p.Metadata;
+            Threads = new();
+
+            foreach (EmbThread thread in p.Threads)
+            {
+                AddThread(thread);
+            }
+
+            Stitches = p.Stitches;
+        }
 
         public void Move(float dX = 0, float dY = 0)
         {
@@ -701,6 +713,19 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                 return -0x10000 + b;
             else
                 return b;
+        }
+
+        public List<EmbThread> GetUniqueThreadList()
+        {
+            List<EmbThread> threads = new();
+            for (EmbThread thread : threadlist)
+            {
+                if (!threads.Contains(thread))
+                {
+                    threads.Add(thread);
+                }
+            }
+            return threads;
         }
     }
 }

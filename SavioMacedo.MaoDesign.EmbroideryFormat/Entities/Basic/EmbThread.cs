@@ -21,6 +21,10 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             FancyLines = new List<FancyLine>();
         }
 
+        public EmbThread()
+        {
+        }
+
         public SKColor Color { get; set; }
         public string Description { get; set; }
         public string CatalogNumber { get; set; }
@@ -109,6 +113,11 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public SKColor AsSkColor()
         {
             return new SKColor((byte)Red, (byte)Green, (byte)Blue);
+        }
+
+        public static EmbThread GetEmbThread()
+        {
+            return new EmbThread();
         }
     }
 }
