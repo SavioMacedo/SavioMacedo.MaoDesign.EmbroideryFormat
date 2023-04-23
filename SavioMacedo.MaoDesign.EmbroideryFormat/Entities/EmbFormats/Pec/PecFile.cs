@@ -21,6 +21,37 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             return Read(stream.ReadFully(), allowTransparency, hideMachinePath, threadThickness);
         }
 
+        //I need to write the reverse code of the method Read receiving a EmbroideryBasic and returning a byte array of .pec file, but I don't know how to do it.
+        //Take a look at the code inside the method Read, I need to write the reverse code of it.
+        //Take a look  at the other methods inside the class PecFile, I need to write the reverse code of it.
+        //Take a look at all the classes inside the entire project.
+        //Take a look at the methods inside the class EmbroideryBasic and his properties.
+        //Take a look at the methods inside the method Read.
+        //Take a look at the methods inside the method ReadPec.
+        //Take a look at the methods inside the method ReadPecGraphics.
+        //Take a look at the methods inside the method ReadPecStitches.
+        //Take a look at the methods inside the method MapPecColors.
+        //Again, I need to write the reverse code of the entire logic inside method Read below receiving a EmbroideryBasic and returning a byte array of .pec file, but I don't know how to do it.
+        public static byte[] Write(EmbroideryBasic embroideryBasic)
+        {
+            using MemoryStream memoryStream = new MemoryStream();
+            using BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
+            binaryWriter.Write("#PEC0001".ToCharArray());
+            binaryWriter.Write((byte)0x00);
+            binaryWriter.Write((byte)0x00);
+            binaryWriter.Write((byte)0x00);
+            binaryWriter.Write(embroideryBasic.FileName.ToCharArray());
+            binaryWriter.Write(new byte[0x10 - embroideryBasic.FileName.Length]);
+            binaryWriter.Write(new byte[0xF]);
+            binaryWriter.Write((byte)0x00);
+            binaryWriter.Write((byte)0x00);
+            binaryWriter.Write(new byte[0xC]);
+            binaryWriter.Write((byte)0x00);
+            binaryWriter.Write(0x00);
+            binaryWriter.Write(new byte[0x1D0]);
+
+        }
+
         public static PecFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)
         {
             PecFile file = new()
@@ -65,64 +96,6 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             reader.BaseStream.Seek(stitchBlockEnd, SeekOrigin.Current);
             int byteSize = pecGraphicByteStride * pecGraphicIconHeight;
             ReadPecGraphics(reader, byteSize, pecGraphicByteStride, countColors + 1, threads);
-        }
-
-        internal void WritePec(BinaryWriter binaryWriter)
-        {
-            var extends = GetBound();
-            if(Threads.Count == 0)
-            {
-                FixColorCount();
-                Threads = Threads;
-            }
-
-
-        }
-
-        internal Tuple<List<int>, List<SKColor>> WritePecHeader(BinaryWriter binaryWriter)
-        {
-            string name = FileName.PadLeft(16);
-            binaryWriter.Write(name);
-            binaryWriter.Flush();
-            binaryWriter.Write("\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\xFF\x00");
-            binaryWriter.Flush();
-            binaryWriter.WriteInt8(48 / 8);
-            binaryWriter.WriteInt8(38);
-
-            var threadList = PecThread.GetThreadSet();
-            List<int> colorIndexList = BuildUniquePalette(threadList, Threads);
-
-            IEnumerable<SKColor> rgbList = threadList.Select(a => a.Color);
-            int currentThreadCount = colorIndexList.Count;
-
-            if(currentThreadCount != 0)
-            {
-                binaryWriter.Write("\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20");
-                binaryWriter.Flush();
-                int addValue = currentThreadCount - 1;
-                colorIndexList.Insert(0, addValue);
-
-                if (colorIndexList[0] >= 255)
-                {
-                    throw new Exception($"too many color changes, ({colorIndexList.Count}) out of bounds (0, 255)");
-                }
-
-                binaryWriter.Write(colorIndexList.SelectMany(BitConverter.GetBytes).ToArray());
-                binaryWriter.Flush();
-            }
-            else
-            {
-                binaryWriter.Write("\x20\x20\x20\x20\x64\x20\x00\x20\x00\x20\x20\x20\xFF");
-                binaryWriter.Flush();
-            }
-
-            for(var i = currentThreadCount; currentThreadCount < 463; i++)
-            {
-                binaryWriter.Write("\x20");
-                binaryWriter.Flush();
-            }
-
-            return (colorIndexList, rgbList);
         }
 
         private void ReadPecGraphics(BinaryReader reader, int byteSize, int pecGraphicByteStride, int count, List<PecThread> threads)

@@ -119,5 +119,45 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         {
             return new EmbThread();
         }
+
+        //public static int findNearestColor<T>(int findColor, T[] values) where T: EmbThread
+        //{
+        //    return findNearestThread(findColor, values).getColor();
+        //}
+
+        public static int FindNearestIndex<T>(int findColor, T[] values) where T: EmbThread
+        {
+            double currentClosestValue = double.PositiveInfinity;
+            int red = (findColor >> 16) & 0xff;
+            int green = (findColor >> 8) & 0xff;
+            int blue = (findColor) & 0xff;
+
+            int closestIndex = -1;
+            int currentIndex = -1;
+            foreach (EmbThread thread in values)
+            {
+                currentIndex++;
+                if (thread == null)
+                {
+                    continue;
+                }
+                double dist = DistanceRedMean(red, green, blue, thread.Red, thread.Green, thread.Blue);
+                if (dist <= currentClosestValue)
+                {
+                    currentClosestValue = dist;
+                    closestIndex = currentIndex;
+                }
+            }
+            return closestIndex;
+        }
+
+        public static double DistanceRedMean(int r1, int g1, int b1, long r2, long g2, long b2)
+        {
+            long rmean = (r1 + r2) / 2;
+            long r = r1 - r2;
+            long g = g1 - g2;
+            long b = b1 - b2;
+            return (((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8);
+        }
     }
 }

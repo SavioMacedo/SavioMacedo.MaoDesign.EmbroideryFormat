@@ -115,24 +115,6 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
             Threads = embroideryBasic.Threads;
         }
 
-        public override void BinaryWrite()
-        {
-            MemoryStream memoryStream = new();
-            BinaryWriter streamWriter = new(memoryStream, Encoding.UTF8);
-            string version = GetMetadata("version");
-            bool isTruncated = bool.Parse(GetMetadata("truncated"));
-
-            if(isTruncated)
-            {
-                if(version == "1")
-                {
-                    WriteVersion1(streamWriter);
-                }
-            }
-
-
-        }
-
         private void WriteVersion1(BinaryWriter streamWriter)
         {
             var threadSet = PecThread.GetThreadSet();

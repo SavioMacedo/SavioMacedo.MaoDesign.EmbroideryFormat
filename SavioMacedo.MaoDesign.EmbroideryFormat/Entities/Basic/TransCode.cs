@@ -19,7 +19,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         bool combineTrimmedJumps = true;
         public bool Tie_on = false;
         public bool Tie_off = false;
-        bool fix_color_count = false;
+        public bool FixColorCount { get; set; } = false;
 
         public bool require_jumps = true;
         private double initial_x = Double.NaN;
@@ -55,7 +55,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             initial_y = y;
         }
 
-        public void transcode(EmbroideryBasic source)
+        public void Transcode(EmbroideryBasic source)
         {
             EmbroideryBasic copy = new(source);
             source.Stitches.Clear();
@@ -185,11 +185,11 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                         break;
                     case Command.Stitch:
                         StitchReady(transcode, x, y);
-                        stitchTo(transcode, x, y);
+                        StitchTo(transcode, x, y);
                         break;
-                    case JUMP:
-                        if ((nextSequenceCommand == COLOR_CHANGE) ||
-                                ((currentCommand == STITCH) && ((sequenceEnd - currentIndex) >= jumps_before_trim)))
+                    case Command.Jump:
+                        if ((nextSequenceCommand == (int)Command.ColorChange) ||
+                                ((currentCommand == Command.Stitch) && ((sequenceEnd - currentIndex) >= jumps_before_trim)))
                         {
                             TrimReady(transcode, x, y);
                         }
@@ -202,34 +202,42 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                         }
                         JumpTo(transcode, x, y);
                         break;
-                    case COLOR_CHANGE:
+                    case Command.ColorChange:
                         TrimReady(transcode, x, y);
-                        if (fix_color_count)
+                        if (FixColorCount)
                         {
-                            if (from.getThreadCount() >= colorIndex)
+                            if (from.Threads.Count >= colorIndex)
                             {
-                                to.addThread(from.getThreadOrFiller(colorIndex));
+                                to.AddThread(from.GetThreadOrFiller(colorIndex));
                             }
                         }
-                        transcode.add((float)x, (float)y, COLOR_CHANGE | (colorIndex++ << 8));
+                        transcode.Add(new((float)x, (float)y, (int)Command.ColorChange | (colorIndex++ << 8)));
                         break;
-                    case STOP:
+                    case Command.Stop:
                         TrimReady(transcode, x, y);
-                        transcode.add((float)x, (float)y, STOP);
+                        transcode.Add(new((float)x, (float)y, Command.Stop));
                         break;
-                    case TIE_OFF:
-                    case TIE_ON:
-
+                    case Command.TieOff:
+                    case Command.TieOn:
                     default:
-                        transcode.add((float)x, (float)y, stitches.getData(currentIndex));
+                        transcode.Add(new((float)x, (float)y, stitch.Command));
                         break;
                 }
-                lastCommand = currentCommand;
+                lastCommand = (int)currentCommand;
                 lastx = x;
                 lasty = y;
                 sequenceEnd--;
                 currentIndex++;
             }
+        }
+
+        private void StitchTo(List<Stitch> transcode, double x, double y)
+        {
+            if (splitLongStitches)
+            {
+                StepToRange(transcode, x, y, MaxStitchLength, (int)Command.Stitch);
+            }
+            transcode.Add(new Stitch((float)x, (float)y, Command.Stitch));
         }
 
         public static TransCode GetTransCode()

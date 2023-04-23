@@ -4,6 +4,8 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 {
     public class Stitch
     {
+        public Stitch(float x, float y, int command):this(x, y, (Command)command) { }
+
         public Stitch(float x, float y, Command command)
         {
             X = x;

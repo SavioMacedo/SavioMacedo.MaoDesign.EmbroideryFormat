@@ -31,15 +31,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public EmbroideryBasic (EmbroideryBasic p)
         {
             FileName = p.FileName;
-            Metadata = p.Metadata;
-            Threads = new();
-
-            foreach (EmbThread thread in p.Threads)
-            {
-                AddThread(thread);
-            }
-
-            Stitches = p.Stitches;
+            Metadata = new(p.Metadata);
+            Threads = new(p.Threads);
+            Stitches = new(p.Stitches);
         }
 
         public void Move(float dX = 0, float dY = 0)
@@ -718,7 +712,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public List<EmbThread> GetUniqueThreadList()
         {
             List<EmbThread> threads = new();
-            for (EmbThread thread : threadlist)
+            foreach (EmbThread thread in Threads)
             {
                 if (!threads.Contains(thread))
                 {
@@ -727,5 +721,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             }
             return threads;
         }
+
+
     }
 }
