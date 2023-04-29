@@ -61,7 +61,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             Write(fileName);
             for (int i = 0; i < (16 - fileName.Length); i++)
             {
-                WriteInt8(0x20);
+                Write(" ");
             }
 
             WriteInt8(0x0D);
@@ -124,15 +124,12 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             }
 
             BinaryWriter colorTempArray = new(new MemoryStream());
-            Push(colorTempArray);
-
 
             foreach (var embObject in embroideryBasic.GetAsStitchBlock())
             {
-                WriteInt8(EmbThread.FindNearestIndex((int)(uint)embObject.Item2.Color, chart));
+                colorTempArray.Write(EmbThread.FindNearestIndex((int)(uint)embObject.Item2.Color, chart));
             }
 
-            Pop();
             int currentThreadCount = (int)colorTempArray.BaseStream.Length;
             if (currentThreadCount != 0)
             {
@@ -174,9 +171,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 
             MemoryStream tempMemoryStream = new();
             BinaryWriter tempArray = new(new MemoryStream());
-            Push(tempArray);
-            PecEncode();
-            Pop();
+            PecEncode(tempArray);
 
             int graphicsOffsetValue = (int)tempArray.BaseStream.Length + 20; //10 //15 //17
             WriteInt24LE(graphicsOffsetValue);
@@ -224,7 +219,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             Write(graphics.GetGraphics());
         }
 
-        private void PecEncode()
+        private void PecEncode(BinaryWriter writer)
         {
             bool colorchangeJump = false;
             bool colorTwo = true;
@@ -239,26 +234,26 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                     case Command.Stitch:
                         if (jumping)
                         {
-                            stream.Write((byte)0x00);
-                            stream.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
                             jumping = false;
                         }
                         deltaX = (int)Math.Round(stitch.X);
                         deltaY = (int)Math.Round(stitch.Y);
                         if (deltaX < 63 && deltaX > -64 && deltaY < 63 && deltaY > -64)
                         {
-                            stream.Write(deltaX & MASK_07_BIT);
-                            stream.Write(deltaY & MASK_07_BIT);
+                            writer.Write(deltaX & MASK_07_BIT);
+                            writer.Write(deltaY & MASK_07_BIT);
                         }
                         else
                         {
                             deltaX = EncodeLongForm(deltaX);
-                            stream.Write((deltaX >> 8) & 0xFF);
-                            stream.Write(deltaX & 0xFF);
+                            writer.Write((deltaX >> 8) & 0xFF);
+                            writer.Write(deltaX & 0xFF);
 
                             deltaY = EncodeLongForm(deltaY);
-                            stream.Write((deltaY >> 8) & 0xFF);
-                            stream.Write(deltaY & 0xFF);
+                            writer.Write((deltaY >> 8) & 0xFF);
+                            writer.Write(deltaY & 0xFF);
                         }
                         break;
                     case Command.Jump:
@@ -275,8 +270,8 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                             deltaX = FlagTrim(deltaX);
                         }
 
-                        stream.Write((deltaX >> 8) & 0xFF);
-                        stream.Write(deltaX & 0xFF);
+                        writer.Write((deltaX >> 8) & 0xFF);
+                        writer.Write(deltaX & 0xFF);
 
                         deltaY = (int)Math.Round(stitch.Y);
                         deltaY = EncodeLongForm(deltaY);
@@ -289,22 +284,22 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                             deltaY = FlagTrim(deltaY);
                         }
 
-                        stream.Write((deltaY >> 8) & 0xFF);
-                        stream.Write(deltaY & 0xFF);
+                        writer.Write((deltaY >> 8) & 0xFF);
+                        writer.Write(deltaY & 0xFF);
                         colorchangeJump = false;
                         //}
                         break;
                     case Command.ColorChange: //prejump
                         if (jumping)
                         {
-                            stream.Write((byte)0x00);
-                            stream.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
                             jumping = false;
                         }
                         //if (previousColor != 0) {
-                        stream.Write(0xfe);
-                        stream.Write(0xb0);
-                        stream.Write((colorTwo) ? 2 : 1);
+                        writer.Write(0xfe);
+                        writer.Write(0xb0);
+                        writer.Write((colorTwo) ? 2 : 1);
                         colorTwo = !colorTwo;
                         colorchangeJump = true;
                         //}
@@ -312,23 +307,23 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                     case Command.Stop:
                         if (jumping)
                         {
-                            stream.Write((byte)0x00);
-                            stream.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
                             jumping = false;
                         }
-                        stream.Write((byte)0x80);
-                        stream.Write((byte)0x1);
-                        stream.Write((byte)0x00);
-                        stream.Write((byte)0x00);
+                        writer.Write((byte)0x80);
+                        writer.Write((byte)0x1);
+                        writer.Write((byte)0x00);
+                        writer.Write((byte)0x00);
                         break;
                     case Command.End:
                         if (jumping)
                         {
-                            stream.Write((byte)0x00);
-                            stream.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
                             jumping = false;
                         }
-                        stream.Write(0xff);
+                        writer.Write(0xff);
                         break;
                 }
             }

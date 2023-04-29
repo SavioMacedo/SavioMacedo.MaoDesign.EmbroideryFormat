@@ -67,10 +67,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
             return null;
         }
 
-        public static void WriteInt8(this BinaryWriter writer, ulong value)
+        public static void WriteInt8(this BinaryWriter writer, int value)
         {
-            writer.Write(value);
-            writer.Flush();
+            writer.Write((byte)value);
         }
     }
 }

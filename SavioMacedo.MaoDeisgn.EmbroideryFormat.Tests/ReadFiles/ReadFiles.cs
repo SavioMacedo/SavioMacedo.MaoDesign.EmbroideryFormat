@@ -157,15 +157,9 @@ namespace SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.ReadFiles
 
             //Act
             PesFile resultFile = PesFile.Read(fileStream, false, false, 2.0f);
-            BinaryWriter writer = new(new MemoryStream());
-            var pecWriter = new PecWriter();
-            pecWriter.Write(resultFile, writer);
-            writer.Flush();
-            var stream = pecWriter.stream.BaseStream;
-            stream.Flush();
-            stream.Position = 0;
+            var data = PecFile.Write(resultFile);
 
-            PecFile pecFile = PecFile.Read(stream, false, false, 2.0f);
+            PecFile pecFile = PecFile.Read(data, false, false, 2.0f);
 
             //Assert
             Assert.Equal(93513, resultFile.Data.Length);

@@ -21,35 +21,70 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             return Read(stream.ReadFully(), allowTransparency, hideMachinePath, threadThickness);
         }
 
-        //I need to write the reverse code of the method Read receiving a EmbroideryBasic and returning a byte array of .pec file, but I don't know how to do it.
-        //Take a look at the code inside the method Read, I need to write the reverse code of it.
-        //Take a look  at the other methods inside the class PecFile, I need to write the reverse code of it.
-        //Take a look at all the classes inside the entire project.
-        //Take a look at the methods inside the class EmbroideryBasic and his properties.
-        //Take a look at the methods inside the method Read.
-        //Take a look at the methods inside the method ReadPec.
-        //Take a look at the methods inside the method ReadPecGraphics.
-        //Take a look at the methods inside the method ReadPecStitches.
-        //Take a look at the methods inside the method MapPecColors.
-        //Again, I need to write the reverse code of the entire logic inside method Read below receiving a EmbroideryBasic and returning a byte array of .pec file, but I don't know how to do it.
-        public static byte[] Write(EmbroideryBasic embroideryBasic)
+        //I need to create the reverse method of Read, but i dont know how to do it
+        //The method that i need to create is Write and receives a EmbroideryBasic and returns a byte[], the byte[] is a .pec format file
+        //I need to create this method because i need to create a PecFile from a EmbroideryBasic
+        //This method needs to do the reverse logical of Read method
+        //Take a look at the Read method and in the entire other methods that is used by him and try to do the reverse of it
+        public static byte[] Write(EmbroideryBasic embroidery)
         {
-            using MemoryStream memoryStream = new MemoryStream();
-            using BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
-            binaryWriter.Write("#PEC0001".ToCharArray());
-            binaryWriter.Write((byte)0x00);
-            binaryWriter.Write((byte)0x00);
-            binaryWriter.Write((byte)0x00);
-            binaryWriter.Write(embroideryBasic.FileName.ToCharArray());
-            binaryWriter.Write(new byte[0x10 - embroideryBasic.FileName.Length]);
-            binaryWriter.Write(new byte[0xF]);
-            binaryWriter.Write((byte)0x00);
-            binaryWriter.Write((byte)0x00);
-            binaryWriter.Write(new byte[0xC]);
-            binaryWriter.Write((byte)0x00);
-            binaryWriter.Write(0x00);
-            binaryWriter.Write(new byte[0x1D0]);
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
+            string fileName = embroidery.FileName;
+            fileName ??= "untitled";
 
+            if (fileName.Length > 16)
+            {
+                fileName = fileName[..8];
+            }
+
+            writer.WriteString("#PEC0001");
+            WritePec(writer, fileName, embroidery);
+
+            return stream.ToArray();
+        }
+
+        //This method continuos to write the .pec file and i think it needs to be the reverse of ReadPec method
+        //Take a look at the ReadPec method and try to do the reverse of it
+        //The data that is used to continuos to write the .pec file is in the EmbroideryBasic class
+        //Take a look at the EmbroideryBasic class and try to do the reverse of it, understand all the methods and properties inside of it
+        //Focus in the properties that is used in this method and to do the reverse of the ReadPec method
+        private static void WritePec(BinaryWriter writer, string fileName, EmbroideryBasic embroidery)
+        {
+            writer.WriteString("LA:");
+            writer.WriteString(fileName);
+            for (int i = 0; i < (16 - fileName.Length); i++)
+            {
+                writer.WriteString(" ");
+            }
+            
+            writer.WriteInt8(0x0D);
+            for(int i = 0; i < 12; i++)
+            {
+                writer.WriteInt8(0x20);
+            }
+
+            writer.WriteInt8(0xFF);
+            writer.WriteInt8(0x00);
+            writer.WriteInt8(0x06);
+            writer.WriteInt8(0x26);
+
+            PecThread[] threadSet = PecThread.GetThreadSet();
+            EmbThread[] chart = new EmbThread[threadSet.Count()];
+            List<PecThread> threads = embroidery.Threads.Cast<PecThread>().ToList();
+
+            foreach(var thread in threads)
+            {
+                int index = PecThread.FindNearestIndex((int)(uint)thread.Color, threadSet);
+                threadSet[index] = null;
+                chart[index] = thread;
+            }
+
+            BinaryWriter colorTemp = new(new MemoryStream());
+            foreach(var embObject in embroidery.GetAsColorBlocks())
+            {
+                writer.WriteInt8(EmbThread.FindNearestIndex((int)(uint)embObject.Item2.Color, threadSet));
+            }
         }
 
         public static PecFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)

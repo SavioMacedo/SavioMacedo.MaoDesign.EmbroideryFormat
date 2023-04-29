@@ -15,5 +15,10 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
             }
             return ms.ToArray();
         }
+
+        public static void WriteString(this BinaryWriter bw, string value) 
+        {
+            bw.Write(value.ToCharArray());
+        }
     }
 }

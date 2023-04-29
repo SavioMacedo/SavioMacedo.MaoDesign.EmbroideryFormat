@@ -21,7 +21,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         {
             this.stream = stream;
             embroideryBasic = embroidery;
-            //PreWrite(embroidery);
+            PreWrite(embroidery);
             Write(embroidery);
             PostWrite(embroidery);
         }
@@ -41,7 +41,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public void Write(string value)
         {
-            stream.Write(value);
+            stream.Write(value.ToCharArray());
         }
 
         public void WriteInt8(int value)
