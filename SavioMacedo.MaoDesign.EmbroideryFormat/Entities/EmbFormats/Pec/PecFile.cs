@@ -81,10 +81,47 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             }
 
             BinaryWriter colorTemp = new(new MemoryStream());
-            foreach(var embObject in embroidery.GetAsColorBlocks())
+            foreach(var embObject in embroidery.GetAsStitchBlock())
             {
-                writer.WriteInt8(EmbThread.FindNearestIndex((int)(uint)embObject.Item2.Color, threadSet));
+                colorTemp.WriteInt8(EmbThread.FindNearestIndex((int)(uint)embObject.Item2.Color, threadSet));
             }
+
+            int currentThreadCount = (int)colorTemp.BaseStream.Length;
+            if(currentThreadCount != 0)
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    writer.WriteInt8(0x20);
+                }
+
+                writer.WriteInt8(currentThreadCount - 1);
+                colorTemp.BaseStream.Seek(0, SeekOrigin.Begin);
+                writer.Write(colorTemp.BaseStream.ReadFully());
+            }
+            else
+            {
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x64);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x00);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x00);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0x20);
+                writer.WriteInt8(0xFF);
+            }
+
+            for (int i = 0; i < (463 - currentThreadCount); i++)
+            {
+                writer.WriteInt8(0x20);
+            } //520
+
+            writer.WriteInt8(0x00);
+            writer.WriteInt8(0x00);
         }
 
         public static PecFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)
