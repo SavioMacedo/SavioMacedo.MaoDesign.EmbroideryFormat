@@ -122,6 +122,146 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 
             writer.WriteInt8(0x00);
             writer.WriteInt8(0x00);
+
+            BinaryWriter tempArray = new(new MemoryStream());
+            PecEncode(tempArray, embroidery);
+            int graphicsOffsetValue = (int)tempArray.BaseStream.Length + 20; //10 //15 //17
+            writer.WriteInt24LE(graphicsOffsetValue);
+
+            writer.WriteInt8(0x31);
+            writer.WriteInt8(0xFF);
+            writer.WriteInt8(0xF0);
+
+            /* write 2 byte x size */
+            writer.WriteInt16LE((short)Math.Round(width));
+            /* write 2 byte y size */
+            writer.WriteInt16LE((short)Math.Round(height));
+
+            /* Write 4 miscellaneous int16's */
+            writer.WriteInt16LE((short)0x1E0);
+            writer.WriteInt16LE((short)0x1B0);
+
+            writer.WriteInt16BE((0x9000 | (int)-Math.Round(minX)));
+            writer.WriteInt16BE((0x9000 | (int)-Math.Round(minY)));
+
+            writer.Write(tempArray.BaseStream.ReadFully());
+
+            PecGraphics graphics = new(minX, minY, maxX, maxY, PEC_ICON_WIDTH, PEC_ICON_HEIGHT);
+
+            foreach (var embObject in embroidery.GetAsStitchBlock())
+            {
+                graphics.Draw(embObject.Item1);
+            }
+        }
+
+        public static void PecEncode(BinaryWriter writer, EmbroideryBasic embroidery)
+        {
+            bool colorchangeJump = false;
+            bool colorTwo = true;
+            IEnumerable<Stitch> stitches = embroideryBasic.Stitches;
+            int deltaX, deltaY;
+            bool jumping = false;
+            for (int i = 0, ie = stitches.Count(); i < ie; i++)
+            {
+                var stitch = stitches.ElementAtOrDefault(i);
+                switch (stitch.Command)
+                {
+                    case Command.Stitch:
+                        if (jumping)
+                        {
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            jumping = false;
+                        }
+                        deltaX = (int)Math.Round(stitch.X);
+                        deltaY = (int)Math.Round(stitch.Y);
+                        if (deltaX < 63 && deltaX > -64 && deltaY < 63 && deltaY > -64)
+                        {
+                            writer.Write(deltaX & MASK_07_BIT);
+                            writer.Write(deltaY & MASK_07_BIT);
+                        }
+                        else
+                        {
+                            deltaX = EncodeLongForm(deltaX);
+                            writer.Write((deltaX >> 8) & 0xFF);
+                            writer.Write(deltaX & 0xFF);
+
+                            deltaY = EncodeLongForm(deltaY);
+                            writer.Write((deltaY >> 8) & 0xFF);
+                            writer.Write(deltaY & 0xFF);
+                        }
+                        break;
+                    case Command.Jump:
+                        jumping = true;
+                        //if (index != 0) {
+                        deltaX = (int)Math.Round(stitch.X);
+                        deltaX = EncodeLongForm(deltaX);
+                        if (colorchangeJump)
+                        {
+                            deltaX = FlagJump(deltaX);
+                        }
+                        else
+                        {
+                            deltaX = FlagTrim(deltaX);
+                        }
+
+                        writer.Write((deltaX >> 8) & 0xFF);
+                        writer.Write(deltaX & 0xFF);
+
+                        deltaY = (int)Math.Round(stitch.Y);
+                        deltaY = EncodeLongForm(deltaY);
+                        if (colorchangeJump)
+                        {
+                            deltaY = FlagJump(deltaY);
+                        }
+                        else
+                        {
+                            deltaY = FlagTrim(deltaY);
+                        }
+
+                        writer.Write((deltaY >> 8) & 0xFF);
+                        writer.Write(deltaY & 0xFF);
+                        colorchangeJump = false;
+                        //}
+                        break;
+                    case Command.ColorChange: //prejump
+                        if (jumping)
+                        {
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            jumping = false;
+                        }
+                        //if (previousColor != 0) {
+                        writer.Write(0xfe);
+                        writer.Write(0xb0);
+                        writer.Write((colorTwo) ? 2 : 1);
+                        colorTwo = !colorTwo;
+                        colorchangeJump = true;
+                        //}
+                        break;
+                    case Command.Stop:
+                        if (jumping)
+                        {
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            jumping = false;
+                        }
+                        writer.Write((byte)0x80);
+                        writer.Write((byte)0x1);
+                        writer.Write((byte)0x00);
+                        writer.Write((byte)0x00);
+                        break;
+                    case Command.End:
+                        if (jumping)
+                        {
+                            writer.Write((byte)0x00);
+                            writer.Write((byte)0x00);
+                            jumping = false;
+                        }
+                        writer.Write(0xff);
+                        break;
+                }
+            }
         }
 
         public static PecFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)

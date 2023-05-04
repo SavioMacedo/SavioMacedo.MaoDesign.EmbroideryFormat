@@ -71,5 +71,24 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
         {
             writer.Write((byte)value);
         }
+
+        public static void WriteInt24LE(this BinaryWriter writer, int value)
+        {
+            writer.Write(value & 0xFF);
+            writer.Write((value >> 8) & 0xFF);
+            writer.Write((value >> 16) & 0xFF);
+        }
+
+        public static void WriteInt16LE(this BinaryWriter writer, int value)
+        {
+            writer.Write(value & 0xFF);
+            writer.Write((value >> 8) & 0xFF);
+        }
+
+        public static void WriteInt16BE(this BinaryWriter writer, int value)
+        {
+            writer.Write((value >> 8) & 0xFF);
+            writer.Write(value & 0xFF);
+        }
     }
 }
