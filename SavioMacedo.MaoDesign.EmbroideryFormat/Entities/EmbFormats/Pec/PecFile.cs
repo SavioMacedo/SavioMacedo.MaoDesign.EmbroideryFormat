@@ -16,6 +16,13 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
         private const int TrimCode = 0x20;
         private const int FlagLong = 0x80;
 
+        static readonly int PEC_ICON_WIDTH = 48;
+        static readonly int PEC_ICON_HEIGHT = 38;
+        static readonly int MASK_07_BIT = 0b01111111;
+        static readonly int JUMP_CODE = 0b00010000;
+        static readonly int TRIM_CODE = 0b00100000;
+        static readonly int FLAG_LONG = 0b10000000;
+
         public static PecFile Read(Stream stream, bool allowTransparency, bool hideMachinePath, float threadThickness)
         {
             return Read(stream.ReadFully(), allowTransparency, hideMachinePath, threadThickness);
@@ -51,6 +58,15 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
         //Focus in the properties that is used in this method and to do the reverse of the ReadPec method
         private static void WritePec(BinaryWriter writer, string fileName, EmbroideryBasic embroidery)
         {
+            float maxX;
+            float minX;
+            float maxY;
+            float minY;
+            (minX, minY, maxX, maxY) = embroidery.Extents();
+
+            float width = maxX - minX;
+            float height = maxY - minY;
+
             writer.WriteString("LA:");
             writer.WriteString(fileName);
             for (int i = 0; i < (16 - fileName.Length); i++)
@@ -158,7 +174,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
         {
             bool colorchangeJump = false;
             bool colorTwo = true;
-            IEnumerable<Stitch> stitches = embroideryBasic.Stitches;
+            IEnumerable<Stitch> stitches = embroidery.Stitches;
             int deltaX, deltaY;
             bool jumping = false;
             for (int i = 0, ie = stitches.Count(); i < ie; i++)
@@ -262,6 +278,23 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                         break;
                 }
             }
+        }
+
+        public static int EncodeLongForm(int value)
+        {
+            value &= 0b00001111_11111111;
+            value |= 0b10000000_00000000;
+            return value;
+        }
+
+        public static int FlagJump(int longForm)
+        {
+            return longForm | (JUMP_CODE << 8);
+        }
+
+        public static int FlagTrim(int longForm)
+        {
+            return longForm | (TRIM_CODE << 8);
         }
 
         public static PecFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)
