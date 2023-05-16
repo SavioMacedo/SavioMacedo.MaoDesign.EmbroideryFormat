@@ -58,11 +58,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
         //Focus in the properties that is used in this method and to do the reverse of the ReadPec method
         private static void WritePec(BinaryWriter writer, string fileName, EmbroideryBasic embroidery)
         {
-            float maxX;
-            float minX;
-            float maxY;
-            float minY;
-            (minX, minY, maxX, maxY) = embroidery.Extents();
+            var (minX, minY, maxX, maxY) = embroidery.Extents();
 
             float width = maxX - minX;
             float height = maxY - minY;
@@ -168,6 +164,24 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             {
                 graphics.Draw(embObject.Item1);
             }
+
+            writer.Write(graphics.GetGraphics());
+            graphics.Clear();
+
+            int lastColor = 0;
+            foreach(var layer in embroidery.GetAsStitchBlock())
+            {
+                if((int)(uint)layer.Item2.Color != lastColor && lastColor != 0)
+                {
+                    writer.Write(graphics.GetGraphics());
+                    graphics.Clear();
+                }
+
+                graphics.Draw(layer.Item1);
+                lastColor = (int)(uint)layer.Item2.Color;
+            }
+
+            writer.Write(graphics.GetGraphics());
         }
 
         public static void PecEncode(BinaryWriter writer, EmbroideryBasic embroidery)
