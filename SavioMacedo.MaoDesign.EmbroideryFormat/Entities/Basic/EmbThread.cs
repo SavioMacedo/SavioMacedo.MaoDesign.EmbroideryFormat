@@ -115,7 +115,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             return new SKColor((byte)Red, (byte)Green, (byte)Blue);
         }
 
-        public static EmbThread GetEmbThread()
+        public static EmbThread GetThreadSet()
         {
             return new EmbThread();
         }

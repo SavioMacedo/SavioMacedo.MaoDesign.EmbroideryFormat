@@ -20,5 +20,13 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
         {
             bw.Write(value.ToCharArray());
         }
+
+        public static void FPad(this BinaryWriter file, byte c, int n)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                file.Write(c);
+            }
+        }
     }
 }
