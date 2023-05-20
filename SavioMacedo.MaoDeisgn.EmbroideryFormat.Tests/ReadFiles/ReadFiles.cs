@@ -158,6 +158,7 @@ namespace SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.ReadFiles
             //Act
             PesFile resultFile = PesFile.Read(fileStream, false, false, 2.0f);
             var data = PecFile.Write(resultFile);
+            File.WriteAllBytes("test.pec", data);
 
             PecFile pecFile = PecFile.Read(data, false, false, 2.0f);
 

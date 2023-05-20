@@ -30,12 +30,6 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             return Read(stream.ReadFully(), allowTransparency, hideMachinePath, threadThickness);
         }
 
-        //The method that i need to create is Write and receives a EmbroideryBasic and returns a byte[], the byte[] is a .pec format file
-        //I need to create this method because i need to create a .pec file format from a EmbroideryBasic
-        //The EmbroideryBasic is a class that i created to represent the embroidery file, it has a list of stitchs and a list of threads
-        //Take a look at the EmbroideryBasic.cs file to understand better
-        //Take a look on internet to understand the .pec file format
-        //Take a look at the repository https://github.com/Embroidermodder/libembroidery/blob/main/src/formats/format_pec.c to understand how to create the .pec file format
         public static byte[] Write(EmbroideryBasic embroidery)
         {
             using MemoryStream stream = new();
@@ -59,15 +53,15 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             int height = (int)pattern.ImageHeight;
             var (minX, minY, maxX, maxY) = pattern.Extents();
 
-            file.Write(Encoding.ASCII.GetBytes("LA:"), 0, 3);
+            file.WriteString("LA:");
             file.WriteString(fileName);
             for (int z = 0; z < (16 - fileName.Length); z++)
             {
                 file.WriteString(" ");
             }
-            file.Write(0x0D);
+            file.Write((byte)0x0D);
             file.FPad(0x20, 12);
-            file.Write(new byte[] { 0xFF, 0x00, 0x06, 0x26 }, 0, 4);
+            file.Write(new byte[] { 0xFF, 0x00, 0x06, 0x26 });
 
             file.FPad(0x20, 12);
             toWrite = (byte)(pattern.Threads.Count - 1);
@@ -75,17 +69,17 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 
             foreach (EmbThread thread in pattern.Threads)
             {
-                byte color = (byte)PecThread.FindNearestIndex((int)(uint)thread.Color, PecThread.GetThreadSet());
+                byte color = (byte)PecThread.FindNearestIndex(thread.Color, PecThread.GetThreadSet());
                 file.Write(color);
             }
-            file.FPad(0x20, 0x1CF - pattern.Threads.Count);
+            file.FPad(0x20, 463 - pattern.Threads.Count);
             file.FPad(0x00, 2);
 
             graphicsOffsetLocation = (int)file.BaseStream.Position;
             // placeholder bytes to be overwritten
             file.FPad(0x00, 3);
 
-            file.Write(new byte[] { 0x31, 0xFF, 0xF0 }, 0, 3);
+            file.Write(new byte[] { 0x31, 0xFF, 0xF0 });
 
             // write 2 byte x size
             file.WriteInt16LE((short)width);
@@ -93,10 +87,10 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             file.WriteInt16LE((short)height);
 
             // Write 4 miscellaneous int16's
-            file.Write(new byte[] { 0x01, 0xE0, 0x01, 0xB0 }, 0, 4);
+            file.Write(new byte[] { 0x01, 0xE0, 0x01, 0xB0 });
 
             file.WriteInt16BE((ushort)(0x9000 | -EmbroideryHelper.EmbroideryHelper.EmbRound(minX)));
-            file.WriteInt16BE((ushort)(0x9000 | -EmbroideryHelper.EmbroideryHelper.EmbRound(maxY)));
+            file.WriteInt16BE((ushort)(0x9000 | -EmbroideryHelper.EmbroideryHelper.EmbRound(minY)));
 
             PecEncode(file, pattern);
             graphicsOffsetValue = (int)file.BaseStream.Position - graphicsOffsetLocation + 2;
@@ -109,15 +103,15 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             file.Seek(0x00, SeekOrigin.End);
 
             // Writing all colors
-            Buffer.BlockCopy(EmbroideryHelper.EmbroideryHelper.imageWithFrame, 0, image, 0, 48 * 38);
+            Array.Copy(EmbroideryHelper.EmbroideryHelper.imageWithFrame, image, 48 * 38);
 
             yFactor = 32.0 / height;
             xFactor = 42.0 / width;
             for (i = 0; i < pattern.Stitches.Count; i++)
             {
-                Stitch st = pattern.Stitches[i];
-                int x = EmbroideryHelper.EmbroideryHelper.EmbRound((st.X - minX) * xFactor) + 3;
-                int y = EmbroideryHelper.EmbroideryHelper.EmbRound((st.Y - maxY) * yFactor) + 3;
+                Stitch stitch = pattern.Stitches[i];
+                int x = EmbroideryHelper.EmbroideryHelper.EmbRound((stitch.X - minX) * xFactor) + 3;
+                int y = EmbroideryHelper.EmbroideryHelper.EmbRound((stitch.Y - minY) * yFactor) + 3;
                 if (x <= 0 || x > 48) continue;
                 if (y <= 0 || y > 38) continue;
                 image[y, x] = 1;
@@ -128,15 +122,15 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
             j = 0;
             for (i = 0; i < pattern.Threads.Count; i++)
             {
-                Buffer.BlockCopy(EmbroideryHelper.EmbroideryHelper.imageWithFrame, 0, image, 0, 48 * 38);
+                Array.Copy(EmbroideryHelper.EmbroideryHelper.imageWithFrame, image, 48 * 38);
                 for (; j < pattern.Stitches.Count; j++)
                 {
                     Stitch stitch = pattern.Stitches[j];
                     int x = EmbroideryHelper.EmbroideryHelper.EmbRound((stitch.X - minX) * xFactor) + 3;
-                    int y = EmbroideryHelper.EmbroideryHelper.EmbRound((stitch.Y - maxY) * yFactor) + 3;
+                    int y = EmbroideryHelper.EmbroideryHelper.EmbRound((stitch.Y - minY) * yFactor) + 3;
                     if (x <= 0 || x > 48) continue;
                     if (y <= 0 || y > 38) continue;
-                    if (stitch.Command == Command.Stop)
+                    if (stitch.Command == Command.ColorChange)
                     {
                         break;
                     }
@@ -145,165 +139,6 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                 WriteImage(file, image);
             }
         }
-
-        //private static void WritePec(BinaryWriter writer, string fileName, EmbroideryBasic embroidery)
-        //{
-        //    var (minX, minY, maxX, maxY) = embroidery.Extents();
-        //    byte[,] image = new byte[38, 48];
-        //    byte toWrite;
-        //    double xFactor, yFactor;
-
-        //    float width = embroidery.ImageWidth;
-        //    float height = embroidery.ImageHeight;
-
-        //    writer.WriteString("LA:");
-        //    writer.WriteString(fileName);
-        //    for (int i = 0; i < (16 - fileName.Length); i++)
-        //    {
-        //        writer.WriteString(" ");
-        //    }
-
-        //    writer.WriteInt8(0x0D);
-        //    for (int i = 0; i < 12; i++)
-        //    {
-        //        writer.WriteInt8(0x20);
-        //    }
-
-        //    writer.WriteInt8(0xFF);
-        //    writer.WriteInt8(0x00);
-        //    writer.WriteInt8(0x06);
-        //    writer.WriteInt8(0x26);
-
-        //    PecThread[] threadSet = PecThread.GetThreadSet();
-        //    EmbThread[] chart = new EmbThread[threadSet.Count()];
-        //    List<PecThread> threads = embroidery.Threads.Cast<PecThread>().ToList();
-
-        //    foreach (var thread in threads)
-        //    {
-        //        int index = PecThread.FindNearestIndex((int)(uint)thread.Color, threadSet);
-        //        threadSet[index] = null;
-        //        chart[index] = thread;
-        //    }
-
-        //    BinaryWriter colorTemp = new(new MemoryStream());
-        //    foreach (var embObject in embroidery.GetAsStitchBlock())
-        //    {
-        //        colorTemp.WriteInt8(EmbThread.FindNearestIndex((int)(uint)embObject.Item2.Color, threadSet));
-        //    }
-
-        //    int currentThreadCount = (int)colorTemp.BaseStream.Length;
-        //    if (currentThreadCount != 0)
-        //    {
-        //        for (int i = 0; i < 12; i++)
-        //        {
-        //            writer.WriteInt8(0x20);
-        //        }
-
-        //        writer.WriteInt8(currentThreadCount - 1);
-        //        colorTemp.BaseStream.Seek(0, SeekOrigin.Begin);
-        //        writer.Write(colorTemp.BaseStream.ReadFully());
-        //    }
-        //    else
-        //    {
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x64);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x00);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x00);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0x20);
-        //        writer.WriteInt8(0xFF);
-        //    }
-
-        //    for (int i = 0; i < (463 - currentThreadCount); i++)
-        //    {
-        //        writer.WriteInt8(0x20);
-        //    } //520
-
-        //    writer.WriteInt8(0x00);
-        //    writer.WriteInt8(0x00);
-
-        //    int graphicsOffsetValueLocation = (int)writer.BaseStream.Position;
-
-        //    writer.Write(0x00);
-        //    writer.Write(0x00);
-        //    writer.Write(0x00);
-
-        //    writer.WriteInt8(0x31);
-        //    writer.WriteInt8(0xFF);
-        //    writer.WriteInt8(0xF0);
-
-        //    /* write 2 byte x size */
-        //    writer.WriteInt16LE((short)Math.Round(width));
-        //    /* write 2 byte y size */
-        //    writer.WriteInt16LE((short)Math.Round(height));
-
-        //    /* Write 4 miscellaneous int16's */
-        //    writer.WriteInt8(0x01);
-        //    writer.WriteInt8(0xe0);
-        //    writer.WriteInt8(0x01);
-        //    writer.WriteInt8(0x00);
-
-        //    writer.WriteInt16BE((0x9000 | (int)-Math.Round(minX)));
-        //    writer.WriteInt16BE((0x9000 | (int)-Math.Round(minY)));
-
-        //    PecEncode(writer, embroidery);
-
-        //    long graphicsOffsetValue = writer.BaseStream.Position - graphicsOffsetValueLocation + 2;
-        //    writer.Seek((int)graphicsOffsetValue, SeekOrigin.Begin);
-
-        //    writer.Write((byte)(graphicsOffsetValueLocation & 0xFF));
-        //    writer.Write((byte)((graphicsOffsetValueLocation >> 8) & 0xFF));
-        //    writer.Write((byte)((graphicsOffsetValueLocation >> 16) & 0xFF));
-
-        //    writer.Seek(0, SeekOrigin.End);
-
-        //    Buffer.BlockCopy(EmbroideryHelper.EmbroideryHelper.imageWithFrame, 0, image, 0, 48 * 38);
-
-        //    yFactor = 32.0 / height;
-        //    xFactor = 42.0 / width;
-
-        //    for (int i = 0; i < embroidery.Stitches.Count; i++)
-        //    {
-        //        Stitch stitch = embroidery.Stitches[i];
-        //        int x = EmbroideryHelper.EmbroideryHelper.EmbRound(stitch.X * xFactor) + 3;
-        //        int y = EmbroideryHelper.EmbroideryHelper.EmbRound(stitch.Y * yFactor) + 3;
-
-        //        if (x <= 0 || x > 48) 
-        //            continue;
-        //        if (y <= 0 || y > 38) 
-        //            continue;
-
-        //        image[y, x] = 1;
-        //    }
-
-        //    WriteImage(writer, image);
-
-        //    int j = 0;
-
-        //    for(int i = 0; i < embroidery.Threads.Count; i++)
-        //    {
-        //        Buffer.BlockCopy(EmbroideryHelper.EmbroideryHelper.imageWithFrame, 0, image, 0, 48 * 38);
-        //        for(; j < embroidery.Stitches.Count; j++)
-        //        {
-        //            Stitch stitch = embroidery.Stitches[j];
-        //            int x = EmbroideryHelper.EmbroideryHelper.EmbRound(stitch.X * xFactor) + 3;
-        //            int y = EmbroideryHelper.EmbroideryHelper.EmbRound(stitch.Y * yFactor) + 3;
-        //            if (x <= 0 || x > 48)
-        //                continue;
-        //            if (y <= 0 || y > 38)
-        //                continue;
-        //            image[y, x] = 1;
-        //            if (stitch.Color != embroidery.Threads[i].Color)
-        //                break;
-        //        }
-        //    }
-        //}
 
         public static void WriteImage(BinaryWriter file, byte[,] image)
         {
@@ -343,7 +178,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                 thisX += deltaX;
                 thisY += deltaY;
 
-                if (stitch.Command == Command.Stop)
+                if (stitch.Command == Command.ColorChange)
                 {
                     PecEncodeStop(writer, stopCode);
                     if (stopCode == 2)
@@ -357,28 +192,28 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
                 }
                 else if (stitch.Command == Command.End)
                 {
-                    writer.Write(new byte[] { 0xFF }, 0, 1);
+                    writer.Write((byte)0xFF);
                 }
                 else if (deltaX < 63 && deltaX > -64 && deltaY < 63 && deltaY > -64 && (!(stitch.Command == (Command.Jump | Command.Trim))))
                 {
-                    byte[] saida = new byte[2];
+                    byte[] output = new byte[2];
                     if (deltaX < 0)
                     {
-                        saida[0] = (byte)(deltaX + 0x80);
+                        output[0] = (byte)(deltaX + 0x80);
                     }
                     else
                     {
-                        saida[0] = (byte)deltaX;
+                        output[0] = (byte)deltaX;
                     }
                     if (deltaY < 0)
                     {
-                        saida[1] = (byte)(deltaY + 0x80);
+                        output[1] = (byte)(deltaY + 0x80);
                     }
                     else
                     {
-                        saida[1] = (byte)deltaY;
+                        output[1] = (byte)deltaY;
                     }
-                    writer.Write(saida, 0, 2);
+                    writer.Write(output);
                 }
                 else
                 {
@@ -420,31 +255,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 
         static void PecEncodeStop(BinaryWriter file, byte val)
         {
-            if (file == null)
-            {
-                Console.WriteLine("ERROR: format-pec.c pecEncodeStop(), file argument is null");
-                return;
-            }
-
-            file.Write(new byte[] { 0xFE, 0xB0 }, 0, 2);
+            file.Write((byte)0xFE);
+            file.Write((byte)0xB0);
             file.Write(val);
-        }
-
-        public static int EncodeLongForm(int value)
-        {
-            value &= 0b00001111_11111111;
-            value |= 0b10000000_00000000;
-            return value;
-        }
-
-        public static int FlagJump(int longForm)
-        {
-            return longForm | (JUMP_CODE << 8);
-        }
-
-        public static int FlagTrim(int longForm)
-        {
-            return longForm | (TRIM_CODE << 8);
         }
 
         public static PecFile Read(byte[] bytes, bool allowTransparency, bool hideMachinePath, float threadThickness)

@@ -125,12 +125,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         //    return findNearestThread(findColor, values).getColor();
         //}
 
-        public static int FindNearestIndex<T>(int findColor, T[] values) where T: EmbThread
+        public static int FindNearestIndex<T>(SKColor color, T[] values) where T: EmbThread
         {
             double currentClosestValue = double.PositiveInfinity;
-            int red = (findColor >> 16) & 0xff;
-            int green = (findColor >> 8) & 0xff;
-            int blue = (findColor) & 0xff;
 
             int closestIndex = -1;
             int currentIndex = -1;
@@ -141,7 +138,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                 {
                     continue;
                 }
-                double dist = DistanceRedMean(red, green, blue, thread.Red, thread.Green, thread.Blue);
+                double dist = DistanceRedMean(color.Red, color.Green, color.Blue, thread.Red, thread.Green, thread.Blue);
                 if (dist <= currentClosestValue)
                 {
                     currentClosestValue = dist;

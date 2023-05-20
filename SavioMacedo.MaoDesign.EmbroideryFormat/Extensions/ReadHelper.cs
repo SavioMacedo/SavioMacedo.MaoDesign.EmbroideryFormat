@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -79,16 +80,18 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
             writer.Write((value >> 16) & 0xFF);
         }
 
-        public static void WriteInt16LE(this BinaryWriter writer, int value)
+        public static void WriteInt16LE(this BinaryWriter writer, short value)
         {
-            writer.Write(value & 0xFF);
-            writer.Write((value >> 8) & 0xFF);
+            byte[] buffer = BitConverter.GetBytes(value);
+            writer.Write(buffer);
         }
 
-        public static void WriteInt16BE(this BinaryWriter writer, int value)
+        public static void WriteInt16BE(this BinaryWriter writer, ushort value)
         {
-            writer.Write((value >> 8) & 0xFF);
-            writer.Write(value & 0xFF);
+            byte[] buffer = new byte[2];
+            buffer[0] = (byte)((value >> 8) & 0xFF);
+            buffer[1] = (byte)(value & 0xFF);
+            writer.Write(buffer);
         }
     }
 }
