@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic;
-using SavioMacedo.MaoDesign.EmbroideryFormat.Extensions;
+﻿using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic.Enums;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Exceptions;
+using SavioMacedo.MaoDesign.EmbroideryFormat.Extensions;
 using System;
-using SkiaSharp;
-using System.Text;
-using EmbroideryHelper = SavioMacedo.MaoDesign.EmbroideryFormat.EmbroideryHelper.EmbroideryHelper;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
 {
@@ -18,16 +15,14 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pec
         private const int TrimCode = 0x20;
         private const int FlagLong = 0x80;
 
-        static readonly int PEC_ICON_WIDTH = 48;
-        static readonly int PEC_ICON_HEIGHT = 38;
-        static readonly int MASK_07_BIT = 0b01111111;
-        static readonly int JUMP_CODE = 0b00010000;
-        static readonly int TRIM_CODE = 0b00100000;
-        static readonly int FLAG_LONG = 0b10000000;
-
         public static PecFile Read(Stream stream, bool allowTransparency, bool hideMachinePath, float threadThickness)
         {
             return Read(stream.ReadFully(), allowTransparency, hideMachinePath, threadThickness);
+        }
+
+        public static PecFile Read(EmbroideryBasic embroidery, bool allowTransparency, bool hideMachinePath, float threadThickness)
+        {
+            return Read(Write(embroidery), allowTransparency, hideMachinePath, threadThickness);
         }
 
         public static byte[] Write(EmbroideryBasic embroidery)

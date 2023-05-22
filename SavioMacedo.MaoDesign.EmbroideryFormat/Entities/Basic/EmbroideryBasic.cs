@@ -726,6 +726,59 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             return threads;
         }
 
+        public void CorrectForMaxStitchLength(double maxStitchLength, double maxJumpLength)
+        {
+            if (Stitches.Count <= 1)
+            {
+                End();
+                return;
+            }
+
+            List<Stitch> newList = new();
+            for (int i = 1; i < Stitches.Count; i++)
+            {
+                Stitch st = Stitches[i];
+                Stitch prevSt = Stitches[i - 1];
+                double dx = prevSt.X - st.X;
+                double dy = prevSt.Y - st.Y;
+                double maxLen = (st.Command == (Command.Jump | Command.Trim)) != false ? maxJumpLength : maxStitchLength;
+
+                if (Math.Abs(dx) > maxStitchLength || Math.Abs(dy) > maxStitchLength)
+                {
+                    double maxXY = Math.Max(Math.Abs(dx), Math.Abs(dy));
+
+                    if (st.Command == (Command.Jump | Command.Trim))
+                    {
+                        maxLen = maxJumpLength;
+                    }
+                    else
+                    {
+                        maxLen = maxStitchLength;
+                    }
+
+                    int splits = (int)Math.Ceiling(maxXY / maxLen);
+
+                    if (splits > 1)
+                    {
+                        float addX = (float)dx / splits;
+                        float addY = (float)dy / splits;
+
+                        for (int j = 1; j < splits; j++)
+                        {
+                            Stitch s = st;
+                            s.X = st.X + addX * j;
+                            s.Y = st.Y + addY * j;
+                            newList.Add(s);
+                        }
+                    }
+                }
+                newList.Add(st);
+            }
+
+            Stitches = newList;
+            End();
+        }
+
 
     }
 }

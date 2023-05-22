@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
 {
@@ -27,6 +28,26 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
             {
                 file.Write(c);
             }
+        }
+
+        public static void WriteInt32Le(this BinaryWriter binaryWriter, int value)
+        {
+            byte[] buffer = BitConverter.GetBytes(value);
+            binaryWriter.Write(buffer);
+        }
+
+        public static void WriteInt16LE(this BinaryWriter writer, short value)
+        {
+            byte[] buffer = BitConverter.GetBytes(value);
+            writer.Write(buffer);
+        }
+
+        public static void WriteInt16BE(this BinaryWriter writer, ushort value)
+        {
+            byte[] buffer = new byte[2];
+            buffer[0] = (byte)((value >> 8) & 0xFF);
+            buffer[1] = (byte)(value & 0xFF);
+            writer.Write(buffer);
         }
     }
 }

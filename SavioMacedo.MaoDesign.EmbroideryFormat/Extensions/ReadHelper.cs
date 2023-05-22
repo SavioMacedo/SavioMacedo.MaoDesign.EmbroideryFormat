@@ -79,19 +79,5 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Extensions
             writer.Write((value >> 8) & 0xFF);
             writer.Write((value >> 16) & 0xFF);
         }
-
-        public static void WriteInt16LE(this BinaryWriter writer, short value)
-        {
-            byte[] buffer = BitConverter.GetBytes(value);
-            writer.Write(buffer);
-        }
-
-        public static void WriteInt16BE(this BinaryWriter writer, ushort value)
-        {
-            byte[] buffer = new byte[2];
-            buffer[0] = (byte)((value >> 8) & 0xFF);
-            buffer[1] = (byte)(value & 0xFF);
-            writer.Write(buffer);
-        }
     }
 }
