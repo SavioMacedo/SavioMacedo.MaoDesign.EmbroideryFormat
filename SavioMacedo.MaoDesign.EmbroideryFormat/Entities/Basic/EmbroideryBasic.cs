@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,7 +33,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public EmbroideryBasic() => (_previousX, _previousY, Stitches, Threads, Metadata) = (0, 0, new List<Stitch>(), new List<EmbThread>(), new Dictionary<string, string>());
 
-        public EmbroideryBasic (EmbroideryBasic p)
+        public EmbroideryBasic(EmbroideryBasic p)
         {
             FileName = p.FileName;
             Metadata = new(p.Metadata);
@@ -220,6 +221,25 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             return CountStitchCommands(Command.Jump);
         }
 
+        public int GetSegmentCount()
+        {
+            int count = 0;
+
+            foreach (var stitch in Stitches)
+            {
+                switch (stitch.Command)
+                {
+                    case Command.Stitch:
+                    case Command.Jump:
+                        {
+                            count++;
+                            break;
+                        }
+                }
+            }
+            return count;
+        }
+
         public IEnumerable<(Stitch[], EmbThread)> GetAsColorBlocks()
         {
             int threadIndex = 0;
@@ -265,6 +285,53 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             }
             yield return stitches[Range.StartAt(lastPost)];
         }
+
+
+
+        public IEnumerable<(List<Stitch>, EmbThread, int)> GetAsSegmentsBlocks(EmbThread[] chart, int adjust_x = 0, int adjust_y = 0)
+        {
+            int color_index = 0;
+            EmbThread current_thread = GetThreadOrFiller(color_index);
+            color_index++;
+            int stitched_x = 0;
+            int stitched_y = 0;
+            foreach (var command_block in GetAsCommandBlocks())
+            {
+                var block = new List<Stitch>();
+                Command command = command_block[0].Command;
+                if (command == Command.Jump)
+                {
+                    block.Add(new Stitch(stitched_x - adjust_x, stitched_y - adjust_y, command));
+                    var last_pos = command_block[^1];
+                    block.Add(new Stitch(last_pos.X - adjust_x, last_pos.Y - adjust_y, command));
+                    int flag = 1;
+                    yield return (block, current_thread, flag);
+                }
+                else if (command == Command.ColorChange)
+                {
+                    current_thread = GetThreadOrFiller(color_index);
+                    color_index++;
+                    int flag = 1;
+                    continue;
+                }
+                else if (command == Command.Stitch)
+                {
+                    foreach (var stitch in command_block)
+                    {
+                        stitched_x = (int)stitch.X;
+                        stitched_y = (int)stitch.Y;
+                        block.Add(new Stitch(stitched_x - adjust_x, stitched_y - adjust_y, command));
+                    }
+                    int flag = 0;
+                    yield return (block, current_thread, flag);
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+
 
         public IEnumerable<(List<Stitch>, EmbThread)> GetAsStitchBlock()
         {
@@ -397,7 +464,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                 }
 
                 graphics.DrawBitmap(tempImage, 0, 0);
-                
+
                 tempImage.Dispose();
             }
             else
@@ -411,24 +478,24 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             int threadIndex = 0;
             bool isInitColor = true;
 
-            foreach(var stitch in Stitches)
+            foreach (var stitch in Stitches)
             {
                 var data = stitch.Command;
-                if(data == Command.Stitch || data == Command.ColorBreak)
+                if (data == Command.Stitch || data == Command.ColorBreak)
                 {
-                    if(isInitColor)
+                    if (isInitColor)
                     {
                         threadIndex++;
                         isInitColor = false;
                     }
                 }
-                else if(data == Command.ColorChange || data == Command.ColorBreak)
+                else if (data == Command.ColorChange || data == Command.ColorBreak)
                 {
                     isInitColor = true;
                 }
             }
 
-            while(Threads.Count < threadIndex)
+            while (Threads.Count < threadIndex)
             {
                 AddThread(GetThreadOrFiller(Threads.Count));
             }
@@ -437,7 +504,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public void InterpolateStopAsDuplicateColor(Command threadChangeCommand = Command.ColorChange)
         {
             int threadIndex = 0;
-            for(var i = 0; i < Stitches.Count; i++)
+            for (var i = 0; i < Stitches.Count; i++)
             {
                 Stitch stitch = Stitches[i];
                 Command command = stitch.Command;
@@ -453,7 +520,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                         Stitches.ElementAt(i).Command = threadChangeCommand;
                         threadIndex++;
                     }
-                    catch(IndexOutOfRangeException)
+                    catch (IndexOutOfRangeException)
                     {
                         return;
                     }
@@ -465,7 +532,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         {
             List<int> palette = new();
 
-            foreach(var thread in threadList)
+            foreach (var thread in threadList)
             {
                 palette.Add(thread.FindNearestColorIndex(threadPalette));
             }
@@ -512,14 +579,14 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                 Color = thread.AsSkColor(),
                 IsAntialias = true
             };
-            
+
             List<OptimizedBlockData> optimizedBlocks = new();
-            
+
             foreach (EmbThread thisBlock in Threads)
             {
                 optimizedBlocks.AddRange(GetOptimizedDrawData(thisBlock, scale, hideMachinePath, filterUtglyStitchesThreshold));
             }
-            
+
             foreach (OptimizedBlockData optBlock in optimizedBlocks)
             {
                 tempPen.Color = optBlock.color;
@@ -532,12 +599,12 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         private List<OptimizedBlockData> GetOptimizedDrawData(EmbThread block, float scale, bool hideMachinePath, double filterUglyStitchesThreshold)
         {
             List<OptimizedBlockData> retval = new();
-            
+
             if (block.FancyLines.Count == 0)
             {
                 return retval;
             }
-            
+
             List<SKPoint> currentPoints = new();
 
             foreach (FancyLine thisStitch in block.FancyLines)
@@ -726,59 +793,68 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             return threads;
         }
 
-        public void CorrectForMaxStitchLength(double maxStitchLength, double maxJumpLength)
+        public void FlipVertical()
         {
-            if (Stitches.Count <= 1)
+            for (var i = 0; i < Stitches.Count; i++)
             {
-                End();
-                return;
+                Stitches[i].Y *= (float)-1.0;
             }
-
-            List<Stitch> newList = new();
-            for (int i = 1; i < Stitches.Count; i++)
-            {
-                Stitch st = Stitches[i];
-                Stitch prevSt = Stitches[i - 1];
-                double dx = prevSt.X - st.X;
-                double dy = prevSt.Y - st.Y;
-                double maxLen = (st.Command == (Command.Jump | Command.Trim)) != false ? maxJumpLength : maxStitchLength;
-
-                if (Math.Abs(dx) > maxStitchLength || Math.Abs(dy) > maxStitchLength)
-                {
-                    double maxXY = Math.Max(Math.Abs(dx), Math.Abs(dy));
-
-                    if (st.Command == (Command.Jump | Command.Trim))
-                    {
-                        maxLen = maxJumpLength;
-                    }
-                    else
-                    {
-                        maxLen = maxStitchLength;
-                    }
-
-                    int splits = (int)Math.Ceiling(maxXY / maxLen);
-
-                    if (splits > 1)
-                    {
-                        float addX = (float)dx / splits;
-                        float addY = (float)dy / splits;
-
-                        for (int j = 1; j < splits; j++)
-                        {
-                            Stitch s = st;
-                            s.X = st.X + addX * j;
-                            s.Y = st.Y + addY * j;
-                            newList.Add(s);
-                        }
-                    }
-                }
-                newList.Add(st);
-            }
-
-            Stitches = newList;
-            End();
         }
 
+        public void CorrectForMaxStitchLength(float maxStitchLength, float maxJumpLength)
+        {
+            if (Stitches.Count > 1)
+            {
+                int i, j, splits;
+                float maxXY, maxLen, addX, addY;
+                List<Stitch> newList = new();
 
+                for (i = 1; i < Stitches.Count; i++)
+                {
+                    Stitch st = Stitches[i];
+                    float xx = st.X;
+                    float yy = st.Y;
+                    float dx = Stitches[i - 1].X - xx;
+                    float dy = Stitches[i - 1].Y - yy;
+
+                    if (Math.Abs(dx) > maxStitchLength || Math.Abs(dy) > maxStitchLength)
+                    {
+                        maxXY = Math.Max(Math.Abs(dx), Math.Abs(dy));
+
+                        if ((st.Command == (Command.Jump | Command.Trim)) != false)
+                        {
+                            maxLen = maxJumpLength;
+                        }
+                        else
+                        {
+                            maxLen = maxStitchLength;
+                        }
+
+                        splits = (int)Math.Ceiling(maxXY / maxLen);
+
+                        if (splits > 1)
+                        {
+                            addX = dx / splits;
+                            addY = dy / splits;
+
+                            for (j = 1; j < splits; j++)
+                            {
+                                Stitch s = st;
+                                s.X = xx + addX * j;
+                                s.Y = yy + addY * j;
+                                newList.Add(s);
+                            }
+                        }
+                    }
+
+                    newList.Add(st);
+                }
+
+                Stitches.Clear();
+                Stitches = newList;
+            }
+
+            End();
+        }
     }
 }

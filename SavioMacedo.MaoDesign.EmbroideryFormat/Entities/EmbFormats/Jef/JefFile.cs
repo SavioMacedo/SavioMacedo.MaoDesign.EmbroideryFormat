@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic.Enums;
 using SavioMacedo.MaoDesign.EmbroideryFormat.Extensions;
@@ -11,6 +12,12 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
         public static JefFile Read(Stream stream, string fileName, bool allowTransparency, bool hideMachinePath, float threadThickness)
         {
             return Read(stream.ReadFully(), fileName, allowTransparency, hideMachinePath, threadThickness);
+        }
+
+        public static JefFile Read(EmbroideryBasic embroideryBasic, bool allowTransparency, bool hideMachinePath, float threadThickness)
+        {
+            byte[] data = Write(embroideryBasic);
+            return Read(data, embroideryBasic.FileName, allowTransparency, hideMachinePath, threadThickness);
         }
 
         public static JefFile Read(byte[] bytes, string fileName, bool allowTransparency, bool hideMachinePath, float threadThickness)
@@ -50,12 +57,16 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
             int colorlistSize, minColors, designWidth, designHeight, i;
             double width, height;
             int data;
+            double dx, dy;
+            double xx = 0.0, yy = 0.0;
+            byte[] b = new byte[4];
 
-            //pattern.CorrectForMaxStitchLength(12.7, 12.7);
+            pattern.FlipVertical();
+            pattern.CorrectForMaxStitchLength((float)127, (float)127);
 
             colorlistSize = pattern.Threads.Count;
             minColors = Math.Max(colorlistSize, 6);
-            writer.WriteInt32Le(0x74 + (minColors * 4));
+            writer.WriteInt32Le(0x74 + (colorlistSize * 8));
             writer.WriteInt32Le(0x0A);
 
             DateTime currentTime = DateTime.Now;
@@ -70,11 +81,13 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                                                  year, month, day, hour, minute, second);
             writer.WriteString(formattedTime);
 
-            writer.FPad(0, 2);
+            writer.FPad(0x00, 2);
             writer.WriteInt32Le(pattern.Threads.Count);
-            data = pattern.Stitches.Count + Math.Max(0, (6 - colorlistSize) * 2) + 1;
+
+            data = pattern.Stitches.Count + pattern.Stitches.Count(a => a.Command == Command.Stop || a.Command == Command.Trim || a.Command == Command.Jump || a.Command == Command.ColorChange);
             writer.WriteInt32Le(data);
 
+            var bounds = pattern.Extents();
             width = pattern.ImageWidth;
             height = pattern.ImageHeight;
             designWidth = (int)(width * 10.0);
@@ -139,38 +152,56 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                 writer.WriteInt32Le(color);
             }
 
-            for (i = 0; i < (minColors - colorlistSize); i++)
+            for (i = 0; i < colorlistSize; i++)
             {
-                int a = 0x0D;
-                writer.WriteInt32Le(a);
+                writer.WriteInt32Le(0x0D);
             }
 
-            double X = 0.0;
-            double Y = 0.0;
-            for (i = 0; i < pattern.Stitches.Count; i++)
+            foreach(Stitch stitch in pattern.Stitches)
             {
-                byte[] b = new byte[4];
-                Stitch stitch;
-                sbyte dx, dy;
-                b[0] = 0;
-                b[1] = 0;
-                b[2] = 0;
-                b[3] = 0;
-                stitch = pattern.Stitches[i];
-                dx = (sbyte)EmbroideryHelper.EmbroideryHelper.EmbRound(10.0 * (stitch.X - X));
-                dy = (sbyte)EmbroideryHelper.EmbroideryHelper.EmbRound(10.0 * (stitch.Y - Y));
-                X += 0.1 * dx;
-                Y += 0.1 * dy;
-                JefEncode(b, dx, dy, stitch.Command);
+                float x = stitch.X;
+                float y = stitch.Y;
+                dx = EmbroideryHelper.EmbroideryHelper.EmbRound(x - xx);
+                dy = EmbroideryHelper.EmbroideryHelper.EmbRound(y - yy);
+                xx = x;
+                yy = y;
+                JefEncode(b, (byte)dx, (byte)dy, stitch.Command);
+
+                writer.Write(b[0]);
+                writer.Write(b[1]);
                 if ((b[0] == 0x80) && ((b[1] == 1) || (b[1] == 2) || (b[1] == 4) || (b[1] == 0x10)))
                 {
-                    writer.Write(b, 0, 4);
-                }
-                else
-                {
-                    writer.Write(b, 0, 2);
+                    writer.Write(b[2]);
+                    writer.Write(b[3]);
                 }
             }
+
+            //double X = 0.0;
+            //double Y = 0.0;
+            //for (i = 0; i < pattern.Stitches.Count; i++)
+            //{
+            //    byte[] b = new byte[4];
+            //    Stitch stitch;
+            //    byte dx, dy;
+            //    b[0] = 0;
+            //    b[1] = 0;
+            //    b[2] = 0;
+            //    b[3] = 0;
+            //    stitch = pattern.Stitches[i];
+            //    dx = (byte)EmbroideryHelper.EmbroideryHelper.EmbRound(10.0 * (stitch.X - X));
+            //    dy = (byte)EmbroideryHelper.EmbroideryHelper.EmbRound(10.0 * (stitch.Y - Y));
+            //    X += 0.1 * dx;
+            //    Y += 0.1 * dy;
+            //    JefEncode(b, dx, dy, stitch.Command);
+            //    if ((b[0] == 0x80) && ((b[1] == 1) || (b[1] == 2) || (b[1] == 4) || (b[1] == 0x10)))
+            //    {
+            //        writer.Write(b, 0, 4);
+            //    }
+            //    else
+            //    {
+            //        writer.Write(b, 0, 2);
+            //    }
+            //}
 
             return memoryStream.ToArray();
         }
@@ -236,19 +267,14 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
             End(0, 0);
         }
 
-        static void JefEncode(byte[] b, sbyte dx, sbyte dy, Command command)
+        static void JefEncode(byte[] b, byte dx, byte dy, Command command)
         {
-            if (b == null)
-            {
-                Console.WriteLine("ERROR: format-jef.c jefEncode(), b argument is null");
-                return;
-            }
-            if (command == Command.ColorChange)
+            if (command == Command.ColorChange || command == Command.Stop)
             {
                 b[0] = 0x80;
                 b[1] = 1;
-                b[2] = (byte)dx;
-                b[3] = (byte)dy;
+                b[2] = dx;
+                b[3] = dy;
             }
             else if (command == Command.End)
             {
@@ -261,13 +287,13 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
             {
                 b[0] = 0x80;
                 b[1] = 2;
-                b[2] = (byte)dx;
-                b[3] = (byte)dy;
+                b[2] = dx;
+                b[3] = dy;
             }
             else
             {
-                b[0] = (byte)dx;
-                b[1] = (byte)dy;
+                b[0] = dx;
+                b[1] = dy;
             }
         }
 
