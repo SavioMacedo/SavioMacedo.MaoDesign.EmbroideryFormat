@@ -11,8 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{390359D6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests", "SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests\SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.csproj", "{2A34A418-5E87-41E3-9D42-7ADCD09E790F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavioMacedo.EmbroideryFormat.ConvertCli", "SavioMacedo.EmbroideryFormat.ConvertCli\SavioMacedo.EmbroideryFormat.ConvertCli.csproj", "{698D4532-1688-4617-B16E-5F1D107E68F8}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,10 +25,6 @@ Global
 		{2A34A418-5E87-41E3-9D42-7ADCD09E790F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A34A418-5E87-41E3-9D42-7ADCD09E790F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A34A418-5E87-41E3-9D42-7ADCD09E790F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{698D4532-1688-4617-B16E-5F1D107E68F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{698D4532-1688-4617-B16E-5F1D107E68F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{698D4532-1688-4617-B16E-5F1D107E68F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{698D4532-1688-4617-B16E-5F1D107E68F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -38,7 +32,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9D7DE202-6A22-49BE-9784-AEBAABB6DE59} = {31F6DF53-BCEE-40EA-84EB-7FF4A56E64FA}
 		{2A34A418-5E87-41E3-9D42-7ADCD09E790F} = {390359D6-17F0-4EDB-AD41-074BC1E66D82}
-		{698D4532-1688-4617-B16E-5F1D107E68F8} = {31F6DF53-BCEE-40EA-84EB-7FF4A56E64FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6107E8A3-6BA2-4FA9-BA12-2D23107BFF03}
