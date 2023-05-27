@@ -21,6 +21,10 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             FancyLines = new List<FancyLine>();
         }
 
+        public EmbThread()
+        {
+        }
+
         public SKColor Color { get; set; }
         public string Description { get; set; }
         public string CatalogNumber { get; set; }
@@ -72,7 +76,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
             }
         }
 
-        public int FindNearestColorIndex(List<EmbThread> embThreads)
+        public int FindNearestColorIndex(IEnumerable<EmbThread> embThreads)
         {
             long red = Red;
             long green = Green;
@@ -109,6 +113,48 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public SKColor AsSkColor()
         {
             return new SKColor((byte)Red, (byte)Green, (byte)Blue);
+        }
+
+        public static EmbThread GetThreadSet()
+        {
+            return new EmbThread();
+        }
+
+        //public static int findNearestColor<T>(int findColor, T[] values) where T: EmbThread
+        //{
+        //    return findNearestThread(findColor, values).getColor();
+        //}
+
+        public static int FindNearestIndex<T>(SKColor color, T[] values) where T: EmbThread
+        {
+            double currentClosestValue = double.PositiveInfinity;
+
+            int closestIndex = -1;
+            int currentIndex = -1;
+            foreach (EmbThread thread in values)
+            {
+                currentIndex++;
+                if (thread == null)
+                {
+                    continue;
+                }
+                double dist = DistanceRedMean(color.Red, color.Green, color.Blue, thread.Red, thread.Green, thread.Blue);
+                if (dist <= currentClosestValue)
+                {
+                    currentClosestValue = dist;
+                    closestIndex = currentIndex;
+                }
+            }
+            return closestIndex;
+        }
+
+        public static double DistanceRedMean(int r1, int g1, int b1, long r2, long g2, long b2)
+        {
+            long rmean = (r1 + r2) / 2;
+            long r = r1 - r2;
+            long g = g1 - g2;
+            long b = b1 - b2;
+            return (((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8);
         }
     }
 }

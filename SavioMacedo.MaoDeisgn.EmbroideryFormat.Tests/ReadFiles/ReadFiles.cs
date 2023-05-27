@@ -93,6 +93,8 @@ namespace SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.ReadFiles
 
             //Act
             JefFile resultFile = JefFile.Read(fileStream, "smf_13.jef", false, false, 2.0f);
+            var data = PesFile.Write(resultFile);
+            PesFile pecFile = PesFile.Read(data, false, false, 2.0f);
 
             //Assert
             Assert.Equal(3928, resultFile.Data.Length);
