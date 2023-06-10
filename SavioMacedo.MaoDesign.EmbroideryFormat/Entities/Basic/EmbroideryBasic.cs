@@ -11,17 +11,13 @@ using SkiaSharp;
 
 namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 {
-    //Here we have the basic class for the embroidery format, it contains the basic properties and methodes for the embroidery format
     public class EmbroideryBasic
     {
         private float _previousX;
         private float _previousY;
 
-        //Here is a list of all the stitches in the embroidery
         public List<Stitch> Stitches { get; set; }
-        //Here is a list of all the threads in the embroidery
         public List<EmbThread> Threads { get; set; }
-        //Here is a dictionary of all the metadata in the embroidery
         public Dictionary<string, string> Metadata { get; set; }
         public FileFormat FileFormat { get; set; }
         public string FileName { get; set; }
@@ -30,6 +26,8 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         public float ImageWidth { get; set; }
         public SKBitmap SkBitmap { get; set; }
         internal SKPoint translateStart;
+        public float WidthRealSizeInMM { get { return ImageWidth / 10; } }
+        public float HeightRealSizeInMM { get { return ImageHeight / 10; } }
 
         public EmbroideryBasic() => (_previousX, _previousY, Stitches, Threads, Metadata) = (0, 0, new List<Stitch>(), new List<EmbThread>(), new Dictionary<string, string>());
 

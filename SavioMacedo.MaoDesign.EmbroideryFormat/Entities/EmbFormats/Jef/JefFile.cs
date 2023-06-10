@@ -165,7 +165,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                 dy = EmbroideryHelper.EmbroideryHelper.EmbRound(y - yy);
                 xx = x;
                 yy = y;
-                JefEncode(b, (byte)dx, (byte)dy, stitch.Command);
+                byte dxByte = (byte)(dx < 0 ? dx + 256 : dx);
+                byte dyByte = (byte)(dx < 0 ? dy + 256 : dy);
+                JefEncode(b, dxByte, dyByte, stitch.Command);
 
                 writer.Write(b[0]);
                 writer.Write(b[1]);

@@ -52,8 +52,8 @@ namespace SavioMacedo.MaoDeisgn.EmbroideryFormat.Tests.ReadFiles
             Stream fileStream = _fileFixture.GetPesStream();
 
             //Act
-            PesFile resultFile = PesFile.Read(fileStream, false, false, 2.0f);
-            JefFile jefFile = JefFile.Read(resultFile, false, false, 2.0f);
+            PesFile resultFile = PesFile.Read(fileStream, false, false, 5.0f);
+            JefFile jefFile = JefFile.Read(resultFile, false, false, 5.0f);
 
             //Assert
             Assert.Equal(7, jefFile.Threads.Count);
