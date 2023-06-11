@@ -95,19 +95,17 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
 
             writer.WriteInt32Le(JefGetHoopSize(designWidth, designHeight));
 
-            // Distance from center of Hoop
-            writer.WriteInt32Le(designWidth / 2);  // left
-            writer.WriteInt32Le(designHeight / 2); // top
-            writer.WriteInt32Le(designWidth / 2);  // right
-            writer.WriteInt32Le(designHeight / 2); // bottom
+            writer.WriteInt32Le(designWidth / 2);
+            writer.WriteInt32Le(designHeight / 2);
+            writer.WriteInt32Le(designWidth / 2);
+            writer.WriteInt32Le(designHeight / 2);
 
-            // Distance from default 110 x 110 Hoop
             if (Math.Min(550 - designWidth / 2, 550 - designHeight / 2) >= 0)
             {
-                writer.WriteInt32Le(Math.Max(-1, 550 - designWidth / 2));  // left
-                writer.WriteInt32Le(Math.Max(-1, 550 - designHeight / 2)); // top
-                writer.WriteInt32Le(Math.Max(-1, 550 - designWidth / 2));  // right
-                writer.WriteInt32Le(Math.Max(-1, 550 - designHeight / 2)); // bottom
+                writer.WriteInt32Le(Math.Max(-1, 550 - designWidth / 2));
+                writer.WriteInt32Le(Math.Max(-1, 550 - designHeight / 2));
+                writer.WriteInt32Le(Math.Max(-1, 550 - designWidth / 2));
+                writer.WriteInt32Le(Math.Max(-1, 550 - designHeight / 2));
             }
             else
             {
@@ -117,13 +115,12 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                 writer.WriteInt32Le(-1);
             }
 
-            // Distance from default 50 x 50 Hoop
             if (Math.Min(250 - designWidth / 2, 250 - designHeight / 2) >= 0)
             {
-                writer.WriteInt32Le(Math.Max(-1, 250 - designWidth / 2));  // left
-                writer.WriteInt32Le(Math.Max(-1, 250 - designHeight / 2)); // top
-                writer.WriteInt32Le(Math.Max(-1, 250 - designWidth / 2));  // right
-                writer.WriteInt32Le(Math.Max(-1, 250 - designHeight / 2)); // bottom
+                writer.WriteInt32Le(Math.Max(-1, 250 - designWidth / 2));
+                writer.WriteInt32Le(Math.Max(-1, 250 - designHeight / 2));
+                writer.WriteInt32Le(Math.Max(-1, 250 - designWidth / 2));
+                writer.WriteInt32Le(Math.Max(-1, 250 - designHeight / 2));
             }
             else
             {
@@ -133,18 +130,15 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                 writer.WriteInt32Le(-1);
             }
 
-            // Distance from default 140 x 200 Hoop
-            writer.WriteInt32Le((700 - designWidth / 2));   // left
-            writer.WriteInt32Le((1000 - designHeight / 2)); // top
-            writer.WriteInt32Le((700 - designWidth / 2));   // right
-            writer.WriteInt32Le((1000 - designHeight / 2)); // bottom
+            writer.WriteInt32Le((700 - designWidth / 2));
+            writer.WriteInt32Le((1000 - designHeight / 2));
+            writer.WriteInt32Le((700 - designWidth / 2));
+            writer.WriteInt32Le((1000 - designHeight / 2));
 
-            // repeated Distance from default 140 x 200 Hoop
-            // TODO: Actually should be distance to custom hoop
-            writer.WriteInt32Le((630 - designWidth / 2));  // left
-            writer.WriteInt32Le((550 - designHeight / 2)); // top
-            writer.WriteInt32Le((630 - designWidth / 2));  // right
-            writer.WriteInt32Le((550 - designHeight / 2)); // bottom
+            writer.WriteInt32Le((630 - designWidth / 2));
+            writer.WriteInt32Le((550 - designHeight / 2));
+            writer.WriteInt32Le((630 - designWidth / 2));
+            writer.WriteInt32Le((550 - designHeight / 2));
 
             for (i = 0; i < pattern.Threads.Count; i++)
             {
@@ -166,7 +160,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                 xx = x;
                 yy = y;
                 byte dxByte = (byte)(dx < 0 ? dx + 256 : dx);
-                byte dyByte = (byte)(dx < 0 ? dy + 256 : dy);
+                byte dyByte = (byte)(dy < 0 ? dy + 256 : dy);
                 JefEncode(b, dxByte, dyByte, stitch.Command);
 
                 writer.Write(b[0]);
@@ -177,33 +171,6 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Jef
                     writer.Write(b[3]);
                 }
             }
-
-            //double X = 0.0;
-            //double Y = 0.0;
-            //for (i = 0; i < pattern.Stitches.Count; i++)
-            //{
-            //    byte[] b = new byte[4];
-            //    Stitch stitch;
-            //    byte dx, dy;
-            //    b[0] = 0;
-            //    b[1] = 0;
-            //    b[2] = 0;
-            //    b[3] = 0;
-            //    stitch = pattern.Stitches[i];
-            //    dx = (byte)EmbroideryHelper.EmbroideryHelper.EmbRound(10.0 * (stitch.X - X));
-            //    dy = (byte)EmbroideryHelper.EmbroideryHelper.EmbRound(10.0 * (stitch.Y - Y));
-            //    X += 0.1 * dx;
-            //    Y += 0.1 * dy;
-            //    JefEncode(b, dx, dy, stitch.Command);
-            //    if ((b[0] == 0x80) && ((b[1] == 1) || (b[1] == 2) || (b[1] == 4) || (b[1] == 0x10)))
-            //    {
-            //        writer.Write(b, 0, 4);
-            //    }
-            //    else
-            //    {
-            //        writer.Write(b, 0, 2);
-            //    }
-            //}
 
             return memoryStream.ToArray();
         }
