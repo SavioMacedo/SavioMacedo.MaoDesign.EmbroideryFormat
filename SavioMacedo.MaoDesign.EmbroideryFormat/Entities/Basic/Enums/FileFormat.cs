@@ -4,17 +4,17 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic.Enums
 {
     public enum FileFormat
     {
-        [Description("application/pes")]
+        [Description("PES - Brother/Bernina")]
         Pes,
-        [Description("application/jef")]
+        [Description("JEF - Janome")]
         Jef,
-        [Description("application/hus")]
+        [Description("HUS - Husqvarna")]
         Hus,
-        [Description("application/dst")]
+        [Description("DST - Tajima")]
         Dst,
-        [Description("application/xxx")]
+        [Description("XXX - Compucon/Singer")]
         Xxx,
-        [Description("application/pec")]
+        [Description("PEC - Brother")]
         Pec,
         Bin
     }
