@@ -23,6 +23,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public EmbThread()
         {
+            FancyLines = new();
         }
 
         public SKColor Color { get; set; }
@@ -119,11 +120,6 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
         {
             return new EmbThread();
         }
-
-        //public static int findNearestColor<T>(int findColor, T[] values) where T: EmbThread
-        //{
-        //    return findNearestThread(findColor, values).getColor();
-        //}
 
         public static int FindNearestIndex<T>(SKColor color, T[] values) where T: EmbThread
         {
