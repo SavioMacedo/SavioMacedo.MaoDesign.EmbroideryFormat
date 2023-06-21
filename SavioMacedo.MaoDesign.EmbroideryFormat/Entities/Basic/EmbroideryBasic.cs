@@ -81,13 +81,13 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public void AddThread(uint threadColor)
         {
-            EmbThread thread = new EmbThread(color: threadColor);
+            EmbThread thread = new(color: threadColor);
             Threads.Add(thread);
         }
 
         public void AddThread(Tuple<string, dynamic> thread)
         {
-            EmbThread threadObj = new EmbThread();
+            EmbThread threadObj = new();
 
             switch (thread.Item1)
             {
@@ -698,7 +698,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                 EmbThread thread = Threads.FirstOrDefault(a => a == embThread);
                 foreach (var stitch in stitches.ToList())
                 {
-                    FancyLine prevStitch = new FancyLine(new SKPoint(prevX, prevY), new SKPoint(stitch.X, stitch.Y));
+                    FancyLine prevStitch = new(new SKPoint(prevX, prevY), new SKPoint(stitch.X, stitch.Y));
                     thread.FancyLines.Add(prevStitch);
                     prevY = stitch.Y;
                     prevX = stitch.X;

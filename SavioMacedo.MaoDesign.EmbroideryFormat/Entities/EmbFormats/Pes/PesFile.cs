@@ -159,8 +159,10 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
 
         private void ReadPesThread(BinaryReader reader, List<PecThread> threads)
         {
-            PecThread thread = new();
-            thread.CatalogNumber = reader.ReadPesString();
+            PecThread thread = new()
+            {
+                CatalogNumber = reader.ReadPesString()
+            };
             byte red = reader.ReadByte();
             byte green = reader.ReadByte();
             byte blue = reader.ReadByte();
@@ -272,9 +274,9 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.EmbFormats.Pes
 
         public static void WritePesHeaderV1(int distinctBlockObjects, BinaryWriter writer)
         {
-            writer.WriteInt16LE(0x01); // 1 is scale to fit
-            writer.WriteInt16LE(0x01); // 0 = 100x100 else 130x180 or above
-            writer.WriteInt16LE(value: (short)distinctBlockObjects); // number of distinct blocks
+            writer.WriteInt16LE(0x01);
+            writer.WriteInt16LE(0x01);
+            writer.WriteInt16LE(value: (short)distinctBlockObjects);
         }
 
         public static void WritePesBlocks(BinaryWriter writer, EmbroideryBasic pattern, float pattern_left, float pattern_top, float pattern_right, float pattern_bottom)
