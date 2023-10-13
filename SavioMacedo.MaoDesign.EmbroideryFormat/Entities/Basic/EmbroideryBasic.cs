@@ -406,7 +406,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
 
         public void UpdateSkBitMap(bool allowTransparency, bool hideMachinePath, float threadThickness, SKPointMode sKPointMode = SKPointMode.Polygon)
         {
-            SKBitmap tempImage = ToBitmap(threadThickness, hideMachinePath, 10.0f, 254 / 400f, sKPointMode);
+            SKBitmap tempImage = ToBitmap(threadThickness, hideMachinePath, 65.0f, 254 / 400f, sKPointMode);
             SKBitmap result;
 
             int width = (int)(tempImage.Width * 1.0f);
@@ -575,6 +575,7 @@ namespace SavioMacedo.MaoDesign.EmbroideryFormat.Entities.Basic
                 StrokeCap = SKStrokeCap.Round,
                 StrokeJoin = SKStrokeJoin.Round,
                 Color = thread.AsSkColor(),
+                StrokeWidth = 2,
                 IsAntialias = true
             };
 
